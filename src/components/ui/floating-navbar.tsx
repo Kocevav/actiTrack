@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { JSX } from "react";
+import React, { Dispatch, JSX, SetStateAction } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 export const FloatingNav = ({
+  setShowForm,
   navItems,
   className,
 }: {
@@ -15,6 +16,7 @@ export const FloatingNav = ({
     icon?: JSX.Element;
   }[];
   className?: string;
+  setShowForm: Dispatch<SetStateAction<boolean>>;
 }) => {
   return (
     <AnimatePresence mode="wait">
@@ -47,12 +49,20 @@ export const FloatingNav = ({
             <span className="hidden sm:block text-sm">{navItem.name}</span>
           </Link>
         ))}
-        <span className="absolute inset-x-0 w-1/2 mx-auto -bottom-px bg-gradient-to-r from-transparent via-orange-600 to-transparent h-px" />
+        <span className="absolute inset-x-0 w-1/2 mx-auto -bottom-px bg-gradient-to-r from-transparent via-orange- to-transparent h-px" />
 
-        <button className="border text-sm relative border-neutral-200 dark:border-white/[0.2] text-white dark:text-white px-4 py-2 rounded-full hover:text-orange-500 font-bold">
+        <button
+          className="border text-sm relative border-neutral-200 dark:border-white/[0.2] text-white dark:text-white px-4 py-2 rounded-full hover:text-orange-500 font-bold"
+          onClick={() => sayHello(setShowForm)}
+        >
           <span>Login</span>
         </button>
       </motion.div>
     </AnimatePresence>
   );
 };
+
+function sayHello(setShowForm: Dispatch<SetStateAction<boolean>>) {
+  console.log("hIII");
+  setShowForm(true);
+}

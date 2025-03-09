@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { IconBrandStrava } from "@tabler/icons-react";
 
-export function Login() {
+export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -15,7 +15,8 @@ export function Login() {
   const handleStravaLogin = () => {
     console.log("Redirecting to Strava login...");
     // Тука стави вистинскиот Strava OAuth URL
-    window.location.href = "https://www.strava.com/oauth/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=YOUR_REDIRECT_URI&scope=read";
+    window.location.href =
+      "https://www.strava.com/oauth/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=YOUR_REDIRECT_URI&scope=read";
   };
 
   return (
@@ -27,7 +28,10 @@ export function Login() {
         Log in with Strava or email to track your activities.
       </p>
 
-      <form onSubmit={handleEmailLogin} className="my-8 flex flex-col space-y-4">
+      <form
+        onSubmit={handleEmailLogin}
+        className="my-8 flex flex-col space-y-4"
+      >
         <input
           type="email"
           placeholder="Email Address"
@@ -44,7 +48,7 @@ export function Login() {
           className="p-2 border rounded-md"
           required
         />
-      <button
+        <button
           className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)inset,0px-1px_0px_0px_var(--zinc-800)_inset]"
           type="submit"
         >
@@ -53,20 +57,18 @@ export function Login() {
         </button>
 
         <div className="flex flex-col space-y-4">
-        <button
-          onClick={handleStravaLogin}
-          className="relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
-        >
-          <IconBrandStrava className="h-4 w-4 text-orange-600" />
-          <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-            Login with Strava
-          </span>
-          <BottomGradient />
-        </button>
-      </div>
+          <button
+            onClick={handleStravaLogin}
+            className="relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+          >
+            <IconBrandStrava className="h-4 w-4 text-orange-600" />
+            <span className="text-neutral-700 dark:text-neutral-300 text-sm">
+              Login with Strava
+            </span>
+            <BottomGradient />
+          </button>
+        </div>
       </form>
-
-    
     </div>
   );
 }
@@ -80,4 +82,4 @@ const BottomGradient = () => {
   );
 };
 
-export default Login;
+export default LoginForm;
