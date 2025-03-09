@@ -1,7 +1,6 @@
-"use client"; 
+"use client";
 import React, { useState, useEffect } from "react";
 
-// Background Component
 export default function Background() {
   const [isClient, setIsClient] = useState(false);
 
@@ -10,17 +9,12 @@ export default function Background() {
   }, []);
 
   if (!isClient) {
-    return null; 
+    return null;
   }
 
   return (
     <div className="absolute top-0 left-0 w-full h-full z-0">
-      <video
-        autoPlay
-        loop
-        muted
-        className="w-full h-full object-cover fixed"
-      >
+      <video autoPlay loop muted className="w-full h-full object-cover fixed">
         <source src="home_video.mp4" type="video/mp4" />
       </video>
     </div>
