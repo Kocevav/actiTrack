@@ -6,7 +6,11 @@
   "tailwind": {
     "config": "",
     "css": "src/app/globals.css",
+<<<<<<< HEAD
     "baseColor": "gray",
+=======
+    "baseColor": "neutral",
+>>>>>>> veronika
     "cssVariables": true,
     "prefix": ""
   },
