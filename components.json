@@ -7,10 +7,14 @@
     "config": "",
     "css": "src/app/globals.css",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "baseColor": "gray",
 =======
     "baseColor": "neutral",
 >>>>>>> veronika
+=======
+    "baseColor": "neutral",
+>>>>>>> origin/tamara
     "cssVariables": true,
     "prefix": ""
   },
