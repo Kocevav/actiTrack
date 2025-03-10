@@ -3,7 +3,13 @@ import React from "react";
 import { FloatingNav } from "@/components/ui/floating-navbar";
 import { IconHome, IconMessage, IconUser } from "@tabler/icons-react";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function FloatingNavBar({ setShowForm }: any) {
+export function FloatingNavBar({
+  setShowForm,
+  whichForm,
+}: {
+  setShowForm: any;
+  whichForm: boolean;
+}) {
   const navItems = [
     {
       name: "Home",
@@ -25,7 +31,11 @@ export function FloatingNavBar({ setShowForm }: any) {
   ];
   return (
     <div className="relative w-full">
-      <FloatingNav navItems={navItems} setShowForm={setShowForm} />
+      <FloatingNav
+        navItems={navItems}
+        setShowForm={setShowForm}
+        whichForm={whichForm}
+      />
     </div>
   );
 }

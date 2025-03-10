@@ -7,11 +7,17 @@ import { IconBrandStrava } from "@tabler/icons-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
-import { enGB } from "date-fns/locale"; // Локализација на англиски
+import { enGB } from "date-fns/locale";
 
-registerLocale("en", enGB); // Регистрирање на англиска локализација
+registerLocale("en", enGB);
 
-export default function SignUpForm() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+export default function SignUpForm({
+  changeWhichFormState,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  changeWhichFormState: any;
+}) {
   const [startDate, setStartDate] = useState<Date | null>(null);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -20,12 +26,12 @@ export default function SignUpForm() {
   };
 
   return (
-    <div className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-white dark:bg-black">
+    <div className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-inpu">
       <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200">
         Welcome to ActiTrack
       </h2>
       <p className="text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300">
-        If you don't have an account you can sign up here!
+        If you don&apos;t have an account you can sign up here!
       </p>
 
       <form className="my-8" onSubmit={handleSubmit}>
@@ -45,9 +51,9 @@ export default function SignUpForm() {
             selected={startDate}
             onChange={(date: Date | null) => setStartDate(date)}
             id="date"
-            locale="en" 
-            dateFormat="dd/mm/yyyy" 
-            placeholderText="dd/mm/yyyy" 
+            locale="en"
+            dateFormat="dd/mm/yyyy"
+            placeholderText="dd/mm/yyyy"
             className="p-2 border border-gray-300 rounded-md dark:bg-zinc-900 dark:text-white"
           />
         </LabelInputContainer>
@@ -85,6 +91,9 @@ export default function SignUpForm() {
             </span>
             <BottomGradient />
           </button>
+        </div>
+        <div className="flex flex-col space-y-4" onClick={changeWhichFormState}>
+          Login
         </div>
       </form>
     </div>

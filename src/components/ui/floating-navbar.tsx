@@ -17,6 +17,7 @@ export const FloatingNav = ({
   }[];
   className?: string;
   setShowForm: Dispatch<SetStateAction<boolean>>;
+  whichForm: boolean;
 }) => {
   return (
     <AnimatePresence mode="wait">
@@ -63,6 +64,5 @@ export const FloatingNav = ({
 };
 
 function sayHello(setShowForm: Dispatch<SetStateAction<boolean>>) {
-  console.log("hIII");
   setShowForm(true);
 }

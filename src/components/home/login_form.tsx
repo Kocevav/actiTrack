@@ -1,8 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState } from "react";
 import { IconBrandStrava } from "@tabler/icons-react";
 
-export function LoginForm() {
+// TO DO CENTAR FORM WHEN IT GOES TO SMALLER SCREEN - MAKE IT RESPONSIVE
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function LoginForm({
+  changeWhichFormState,
+}: {
+  changeWhichFormState: any;
+}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -67,6 +75,9 @@ export function LoginForm() {
             </span>
             <BottomGradient />
           </button>
+        </div>
+        <div className="flex flex-col space-y-4" onClick={changeWhichFormState}>
+          Register
         </div>
       </form>
     </div>
