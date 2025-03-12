@@ -2,6 +2,7 @@
 "use client";
 import React, { useState } from "react";
 import { IconBrandStrava } from "@tabler/icons-react";
+import { login } from "@/lib/actions/auth";
 
 // TO DO CENTAR FORM WHEN IT GOES TO SMALLER SCREEN - MAKE IT RESPONSIVE
 
@@ -21,10 +22,7 @@ export function LoginForm({
   };
 
   const handleStravaLogin = () => {
-    console.log("Redirecting to Strava login...");
-    // Тука стави вистинскиот Strava OAuth URL
-    window.location.href =
-      "https://www.strava.com/oauth/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=YOUR_REDIRECT_URI&scope=read";
+    login();
   };
 
   return (
