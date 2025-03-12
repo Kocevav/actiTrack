@@ -73,7 +73,7 @@ export default function Home() {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
 function showLoginForm(changeWhichFormState: any) {
   return (
-    <div className="flex justify-end items-center min-h-screen px-8 z-10">
+    <div className="flex sm:justify-center lg:justify-end items-center min-h-screen z-10 w-full px-4">
       <div className="w-[400px] max-w-md z-10">
         <LoginForm changeWhichFormState={changeWhichFormState} />
       </div>
