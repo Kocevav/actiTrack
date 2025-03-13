@@ -2,6 +2,8 @@ import NextAuth from "next-auth";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { JWT } from "next-auth/jwt";
 import Strava from "next-auth/providers/strava";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { prisma } from "./utils/prisma";
 
 declare module "next-auth" {
   interface Session {
@@ -28,6 +30,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
+  //   adapter: PrismaAdapter(prisma),
   callbacks: {
     async jwt({ token, account }) {
       if (account) {
