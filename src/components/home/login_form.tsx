@@ -1,13 +1,20 @@
 "use client";
 import React, { useState } from "react";
 import { IconBrandStrava } from "@tabler/icons-react";
+import { login } from "@/lib/actions/auth";
 import { Oxanium } from "next/font/google";
 
 const oxanium = Oxanium({
   subsets: ["latin"],
 });
 
-export function LoginForm({ changeWhichFormState }: { changeWhichFormState: any }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function LoginForm({
+  changeWhichFormState,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  changeWhichFormState: any;
+}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -17,13 +24,13 @@ export function LoginForm({ changeWhichFormState }: { changeWhichFormState: any 
   };
 
   const handleStravaLogin = () => {
-    console.log("Redirecting to Strava login...");
-    window.location.href =
-      "https://www.strava.com/oauth/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=YOUR_REDIRECT_URI&scope=read";
+    login();
   };
 
   return (
-    <div className={`flex justify-center items-center min-h-screen px-4 ${oxanium.className}`}>
+    <div
+      className={`flex justify-center items-center min-h-screen px-4 ${oxanium.className}`}
+    >
       <div className="w-full max-w-md bg-white dark:bg-black rounded-lg shadow-md p-6 sm:p-8">
         <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200 text-center">
           Welcome to ActiTrack
@@ -32,7 +39,10 @@ export function LoginForm({ changeWhichFormState }: { changeWhichFormState: any 
           Log in with Strava or email to track your activities.
         </p>
 
-        <form onSubmit={handleEmailLogin} className="my-6 flex flex-col space-y-4">
+        <form
+          onSubmit={handleEmailLogin}
+          className="my-6 flex flex-col space-y-4"
+        >
           <input
             type="email"
             placeholder="Email Address"
@@ -61,11 +71,13 @@ export function LoginForm({ changeWhichFormState }: { changeWhichFormState: any 
             className="flex items-center justify-center space-x-2 px-4 w-full text-black rounded-md h-10 font-medium shadow-md bg-gray-50 dark:bg-zinc-900"
           >
             <IconBrandStrava className="h-5 w-5 text-orange-600" />
-            <span className="text-neutral-700 dark:text-neutral-300 text-sm">Login with Strava</span>
+            <span className="text-neutral-700 dark:text-neutral-300 text-sm">
+              Login with Strava
+            </span>
           </button>
 
           <div className="text-center text-sm mt-4">
-            <span className="text-gray-600">Don't have an account? </span>
+            <span className="text-gray-600">Don&apos;t have an account? </span>
             <button
               onClick={changeWhichFormState}
               className="text-blue-500 hover:underline"
