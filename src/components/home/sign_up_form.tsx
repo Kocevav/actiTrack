@@ -1,130 +1,134 @@
 "use client";
 import React, { useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import { IconBrandStrava } from "@tabler/icons-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
 import { enGB } from "date-fns/locale";
+import { Oxanium } from "next/font/google";
+
+const oxanium = Oxanium({
+  subsets: ["latin"],
+});
 
 registerLocale("en", enGB);
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
 export default function SignUpForm({
   changeWhichFormState,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   changeWhichFormState: any;
 }) {
   const [startDate, setStartDate] = useState<Date | null>(null);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Form submitted");
   };
 
-  return (
-    <div className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-inpu">
-      <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200">
-        Welcome to ActiTrack
-      </h2>
-      <p className="text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300">
-        If you don&apos;t have an account you can sign up here!
-      </p>
+  const handleStravaLogin = () => {
+    console.log("Redirecting to Strava login...");
+    window.location.href =
+      "https://www.strava.com/oauth/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=YOUR_REDIRECT_URI&scope=read";
+  };
 
-      <form className="my-8" onSubmit={handleSubmit}>
-        <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
-          <LabelInputContainer>
-            <Label htmlFor="firstname">First name</Label>
-            <Input id="firstname" placeholder="Name" type="text" />
-          </LabelInputContainer>
-          <LabelInputContainer>
-            <Label htmlFor="lastname">Last name</Label>
-            <Input id="lastname" placeholder="Last name" type="text" />
-          </LabelInputContainer>
-        </div>
-        <LabelInputContainer className="mb-4">
-          <Label htmlFor="date">Select Date</Label>
+  return (
+    <div className={`flex justify-center items-center min-h-screen px-4 ${oxanium.className}`}>
+      <div className="w-full max-w-md bg-white dark:bg-black rounded-lg shadow-md p-6 sm:p-8">
+        <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200 text-center">
+          Welcome to ActiTrack
+        </h2>
+        <p className="text-neutral-600 text-sm text-center mt-2 dark:text-neutral-300">
+          Sign up with Strava or email to track your activities.
+        </p>
+
+        <form onSubmit={handleSubmit} className="my-6 flex flex-col space-y-4">
+          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <input
+              type="text"
+              placeholder="First Name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="p-2 border rounded-md w-full text-sm md:text-base"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Last Name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className="p-2 border rounded-md w-full text-sm md:text-base"
+              required
+            />
+          </div>
+          
           <DatePicker
             selected={startDate}
             onChange={(date: Date | null) => setStartDate(date)}
-            id="date"
-            locale="en"
-            dateFormat="dd/mm/yyyy"
-            placeholderText="dd/mm/yyyy"
-            className="p-2 border border-gray-300 rounded-md dark:bg-zinc-900 dark:text-white"
+            placeholderText="Select Date of Birth"
+            dateFormat="dd/MM/yyyy"
+            className="p-2 border rounded-md w-full text-sm md:text-base"
           />
-        </LabelInputContainer>
-        <LabelInputContainer className="mb-4">
-          <Label htmlFor="email">Email Address</Label>
-          <Input id="email" placeholder="Email Address" type="email" />
-        </LabelInputContainer>
-        <LabelInputContainer className="mb-4">
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" placeholder="Password" type="password" />
-        </LabelInputContainer>
-        <LabelInputContainer className="mb-4">
-          <Label htmlFor="password">Confirm Password</Label>
-          <Input id="password" placeholder="Confirm Password" type="password" />
-        </LabelInputContainer>
-
-        <button
-          className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
-          type="submit"
-        >
-          Sign up &rarr;
-          <BottomGradient />
-        </button>
-
-        <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full" />
-
-        <div className="flex flex-col space-y-4">
+          
+          <input
+            type="email"
+            placeholder="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="p-2 border rounded-md w-full text-sm md:text-base"
+            required
+          />
+          
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="p-2 border rounded-md w-full text-sm md:text-base"
+            required
+          />
+          
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="p-2 border rounded-md w-full text-sm md:text-base"
+            required
+          />
+          
+          <button
+            className="bg-orange-600 hover:bg-orange-700 transition duration-200 w-full text-white rounded-md h-10 font-medium shadow-md"
+            type="submit"
+          >
+            Sign up &rarr;
+          </button>
+          
           <button
             onClick={handleStravaLogin}
-            className="relative group/btn flex space-x-2 items-center justify-start px-4 w-full text-black rounded-md h-10 font-medium shadow-input bg-gray-50 dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+            className="flex items-center justify-center space-x-2 px-4 w-full text-black rounded-md h-10 font-medium shadow-md bg-gray-50 dark:bg-zinc-900"
+            type="button"
           >
-            <IconBrandStrava className="h-4 w-4 text-orange-600" />
-            <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-              Login with Strava
-            </span>
-            <BottomGradient />
+            <IconBrandStrava className="h-5 w-5 text-orange-600" />
+            <span className="text-neutral-700 dark:text-neutral-300 text-sm">Sign up with Strava</span>
           </button>
-        </div>
-        <div className="flex flex-col space-y-4" onClick={changeWhichFormState}>
-          Login
-        </div>
-      </form>
+          
+          <div className="text-center text-sm mt-4">
+            <span className="text-gray-600">Already have an account? </span>
+            <button
+              onClick={changeWhichFormState}
+              className="text-blue-500 hover:underline"
+              type="button"
+            >
+              Login
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
-
-const BottomGradient = () => {
-  return (
-    <>
-      <span className="group-hover/btn:opacity-100 block transition duration-500 opacity-0 absolute h-px w-full -bottom-px inset-x-0 bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
-      <span className="group-hover/btn:opacity-100 blur-sm block transition duration-500 opacity-0 absolute h-px w-1/2 mx-auto -bottom-px inset-x-10 bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
-    </>
-  );
-};
-
-const LabelInputContainer = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return (
-    <div className={cn("flex flex-col space-y-2 w-full", className)}>
-      {children}
-    </div>
-  );
-};
-
-const handleStravaLogin = () => {
-  console.log("Redirecting to Strava login...");
-  window.location.href =
-    "https://www.strava.com/oauth/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=YOUR_REDIRECT_URI&scope=read";
-};

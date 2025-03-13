@@ -109,8 +109,8 @@ function showTextTyping() {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
 function showRegisterForm(changeWhichFormState: any) {
   return (
-    <div className="flex justify-end items-center min-h-screen px-8 bg-gray-100 dark:bg-gray-900">
-      <div className="w-full max-w-md z-10">
+    <div className="flex sm:justify-center lg:justify-end items-center min-h-screen z-10 w-full px-4">
+      <div className="w-[400px] max-w-md z-10">
         <SignUpForm changeWhichFormState={changeWhichFormState} />
       </div>
     </div>
