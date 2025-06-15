@@ -8,6 +8,7 @@ import { db } from "./db";
 declare module "next-auth" {
   interface Session {
     accessToken: string;
+    id: string;
   }
   interface Account {
     access_token: string;
@@ -17,6 +18,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     accessToken: string;
+    id: string;
   }
 }
 
@@ -34,12 +36,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
       },
       profile(profile) {
-        console.log("Profilot");
-        console.log(profile); // Debug log
+        // console.log("Profilot");
+        // console.log(profile); // Debug log
 
         return {
           id: profile.id,
-          name: profile.name,
+          name: profile.firstname + " " + profile.lastname,
           email: profile.email,
           image: profile.profile_picture,
         };
@@ -47,18 +49,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account, user }) {
       if (account) {
-        console.log("Accounticka ");
-        console.log(account); // Debug log
         token.accessToken = account.access_token;
+        token.id = user.id!;
       }
       return token;
     },
     async session({ session, token }) {
-      console.log("Sessionicka ");
-      console.log(session); // Debug log
       session.accessToken = token.accessToken;
+      session.userId = token.id;
+
+      // console.log("Sessionicka ");
+      // console.log(session); // Debug log
       return session;
     },
   },
