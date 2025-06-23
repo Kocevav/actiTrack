@@ -124,3 +124,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+.react-datepicker__input-container input {
+  @apply w-full bg-neutral-900 text-white p-2 rounded-md border border-neutral-700;
+}
+

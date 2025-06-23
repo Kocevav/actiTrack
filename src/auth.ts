@@ -6,12 +6,11 @@ import Credentials from "next-auth/providers/credentials";
 
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { db } from "./db";
-import { id } from "date-fns/locale";
 
 declare module "next-auth" {
   interface Session {
     accessToken: string;
-    id: string;
+    userId: string;
   }
   interface Account {
     access_token: string;
@@ -66,10 +65,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       authorize: async (credentials) => {
         let user = null;
 
-        // logic to salt and hash password
-        // const pwHash = saltAndHashPassword(credentials.password);
-
-        // logic to verify if the user exists
         user = await db.user.findFirst({
           where: {
             email: {
@@ -80,8 +75,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         console.log(user);
         if (!user) {
-          // No user found, so this is their first attempt to login
-          // Optionally, this is also the place you could do a user registration
           throw new Error("Invalid credentials.");
         }
 
@@ -94,6 +87,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (account) {
         token.accessToken = account.access_token;
         token.id = user.id!;
+      }
+      if (user?.name) {
+        console.log("JWT USER", user);
+        token.name = user.name;
       }
       return token;
     },
