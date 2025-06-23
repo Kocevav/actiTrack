@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { BackgroundBeams } from "../../components/ui/background-beams";
-import CardForm from "../../components/ui/card";
+import FetchedEvents from "../../components/ui/fetchedEvents";
 import Link from "next/link";
 
 export function EventsPage() {
@@ -10,7 +10,7 @@ export function EventsPage() {
       <BackgroundBeams />
       
         {/* Header with Create Button */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto flex justify-between items-center px-8 mt-16">
+      <div className="relative z-10 w-full max-w-5xl mx-auto flex justify-between items-center px-8 mt-8 mb-4">
         <h1 className="text-3xl font-bold text-white">Events</h1>
         <Link href="/events/create">
           <button className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors duration-300 flex items-center">
@@ -32,10 +32,9 @@ export function EventsPage() {
         </Link>
       </div>
 
-        {/* Додај ја секцијата со картите */}
-        <div className="mt-8">
-          <CardForm />
-        </div>
+        <div className="w-full max-w-5xl px-8 mx-auto mt-4">
+          <FetchedEvents />
+       </div>
       </div>
   );
 }

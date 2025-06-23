@@ -36,29 +36,41 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       profile(profile) {
         console.log("Profilot");
         console.log(profile); // Debug log
+        console.log(profile.firstname)
 
         return {
           id: profile.id,
-          name: profile.name,
-          email: profile.email,
-          image: profile.profile_picture,
+          name: profile.firstname && profile.lastname
+          ? `${profile.firstname} ${profile.lastname}`
+          : profile.username ?? profile.email ?? "Unknown",
+          email: profile.email ?? `${profile.username}@strava.actitrack.local`,
+          image: profile.profile,
         };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, account }) {
+    async jwt({ token, account, user }) {
       if (account) {
         console.log("Accounticka ");
         console.log(account); // Debug log
         token.accessToken = account.access_token;
       }
+      if (user?.name) {
+        console.log("JWT USER", user);
+        token.name = user.name;
+  }
       return token;
     },
     async session({ session, token }) {
       console.log("Sessionicka ");
+
       console.log(session); // Debug log
       session.accessToken = token.accessToken;
+       if (token.name) {
+        session.user.name = token.name as string;
+      }
+
       return session;
     },
   },
