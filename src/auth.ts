@@ -2,6 +2,8 @@ import NextAuth, { NextAuthConfig } from "next-auth";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { JWT } from "next-auth/jwt";
 import Strava from "next-auth/providers/strava";
+import Credentials from "next-auth/providers/credentials";
+
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { db } from "./db";
 
@@ -45,6 +47,40 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: profile.email,
           image: profile.profile_picture,
         };
+      },
+    }),
+    Credentials({
+      credentials: {
+        email: {
+          type: "email",
+          label: "Email",
+          placeholder: "johndoe@gmail.com",
+        },
+        password: {
+          type: "password",
+          label: "Password",
+          placeholder: "*****",
+        },
+      },
+      authorize: async (credentials) => {
+        // let user = null;
+
+        // logic to salt and hash password
+        // const pwHash = saltAndHashPassword(credentials.password);
+
+        // logic to verify if the user exists
+        // user = await getUserFromDb(credentials.email, pwHash);
+
+        console.log(credentials);
+        // if (!user) {
+        //   // No user found, so this is their first attempt to login
+        //   // Optionally, this is also the place you could do a user registration
+        //   throw new Error("Invalid credentials.");
+        // }
+
+        // // return user object with their profile data
+        // return user;
+        return null;
       },
     }),
   ],
