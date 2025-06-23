@@ -40,7 +40,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // console.log(profile); // Debug log
 
         return {
-          id: profile.id,
+          id: String(profile.id),
           name: profile.firstname + " " + profile.lastname,
           email: profile.email,
           image: profile.profile_picture,
