@@ -3,6 +3,9 @@ import React, { useState } from "react";
 import { IconBrandStrava } from "@tabler/icons-react";
 import { login } from "@/lib/actions/auth";
 import { Oxanium } from "next/font/google";
+import { signInSchema } from "../../lib/zod";
+import { signIn } from "next-auth/react";
+import bcrypt from "bcrypt";
 
 const oxanium = Oxanium({
   subsets: ["latin"],
@@ -17,10 +20,26 @@ export function LoginForm({
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [formErrors, setFormErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
 
   const handleEmailLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Logging in with email:", email);
+    const result = signInSchema.safeParse({ email, password });
+
+    if (!result.success) {
+      const flattened = result.error.flatten().fieldErrors;
+      setFormErrors({
+        email: flattened.email?.[0],
+        password: flattened.password?.[0],
+      });
+      return;
+    }
+
+    setFormErrors({});
+    signIn("credentials", result.data);
   };
 
   const handleStravaLogin = () => {
@@ -45,47 +64,57 @@ export function LoginForm({
         >
           <input
             type="email"
+            id="credentials-email"
             placeholder="Email Address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="p-2 border rounded-md w-full text-sm md:text-base"
             required
           />
+          {formErrors.email && (
+            <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
+          )}
+
           <input
             type="password"
+            id="credentials-password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="p-2 border rounded-md w-full text-sm md:text-base"
             required
           />
+          {formErrors.password && (
+            <p className="text-red-500 text-sm mt-1">{formErrors.password}</p>
+          )}
+
           <button
             className="bg-orange-600 hover:bg-orange-700 transition duration-200 w-full text-white rounded-md h-10 font-medium shadow-md"
             type="submit"
           >
             Log in &rarr;
           </button>
-
-          <button
-            onClick={handleStravaLogin}
-            className="flex items-center justify-center space-x-2 px-4 w-full text-black rounded-md h-10 font-medium shadow-md bg-gray-50 dark:bg-zinc-900"
-          >
-            <IconBrandStrava className="h-5 w-5 text-orange-600" />
-            <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-              Login with Strava
-            </span>
-          </button>
-
-          <div className="text-center text-sm mt-4">
-            <span className="text-gray-600">Don&apos;t have an account? </span>
-            <button
-              onClick={changeWhichFormState}
-              className="text-blue-500 hover:underline"
-            >
-              Register
-            </button>
-          </div>
         </form>
+
+        <button
+          onClick={handleStravaLogin}
+          className="flex items-center justify-center space-x-2 px-4 w-full text-black rounded-md h-10 font-medium shadow-md bg-gray-50 dark:bg-zinc-900"
+        >
+          <IconBrandStrava className="h-5 w-5 text-orange-600" />
+          <span className="text-neutral-700 dark:text-neutral-300 text-sm">
+            Login with Strava
+          </span>
+        </button>
+
+        <div className="text-center text-sm mt-4">
+          <span className="text-gray-600">Don&apos;t have an account? </span>
+          <button
+            onClick={changeWhichFormState}
+            className="text-blue-500 hover:underline"
+          >
+            Register
+          </button>
+        </div>
       </div>
     </div>
   );

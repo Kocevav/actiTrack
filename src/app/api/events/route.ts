@@ -1,49 +1,58 @@
-import getServerSession from "next-auth";
 import { auth } from "@/auth"; // провери дали кај тебе е на друга локација
 import { NextResponse } from "next/server";
 import { prisma } from "@/utils/prisma";
-
+import { db } from "@/db";
 
 export async function POST(req: Request) {
   try {
-    const session = await auth(); // 2. Добиј ја сесијата
+    const session = await auth();
 
-    if (!session?.user?.name) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    const userId = session.userId; // use userId, not id
+
+    const user = await db.user.findFirst({ where: { id: userId } });
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "User not found" },
+        { status: 404 }
+      );
     }
 
     const body = await req.json();
-    const {
-      title,
-      description,
-      time,
-      place,
-      participants,
-      status,
-      comments,
-    } = body;
+    console.log(body);
+    const { name, description, time, place } = body;
+
+    if (!name || !description || !time || !place) {
+      return NextResponse.json(
+        { success: false, error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
     const newEvent = await prisma.event.create({
       data: {
-        title,
+        name,
         description,
-        owner: session.user.name, // 3. Користи го логираниот user
+        owner: {
+          connect: { id: userId }, // use userId here
+        },
         time: new Date(time),
         place,
-        participants,
-        status,
-        comments,
+        status: "CREATED",
       },
     });
 
-    return NextResponse.json({ success: true, event: newEvent }, { status: 201 });
+    return NextResponse.json(
+      { success: true, event: newEvent },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error creating event:", error);
-    return NextResponse.json({ success: false, error: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Server error" },
+      { status: 500 }
+    );
   }
 }
-
-
 
 export async function GET() {
   try {
@@ -54,6 +63,9 @@ export async function GET() {
     return NextResponse.json({ success: true, events });
   } catch (error) {
     console.error("Error fetching events:", error);
-    return NextResponse.json({ success: false, error: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Server error" },
+      { status: 500 }
+    );
   }
 }

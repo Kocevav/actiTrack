@@ -5,58 +5,55 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useRouter } from "next/navigation";
 
-
 export default function CreateEventForm() {
-  const [title, setTitle] = useState("");
+  const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [dateTime, setDateTime] = useState<Date | null>(null);
   const router = useRouter();
 
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  console.log("Form submitted");
-  alert("Are you sure you want to create this event");
-  console.log("PRAKJANJE request to /api/events");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Form submitted");
+    alert("Are you sure you want to create this event");
+    console.log("PRAKJANJE request to /api/events");
 
+    const res = await fetch("/api/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        description,
+        place: location,
+        time: dateTime,
+      }),
+    });
 
-  const res = await fetch("/api/events", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      title,
-      description,
-      place: location,
-      time: dateTime,
-      participants: 0,
-      status: "Upcoming",
-      comments: [],
-    }),
-  });
+    const result = await res.json();
+    console.log("Response:", result);
 
-  const result = await res.json();
-  console.log("Response:", result); 
-
-  if (res.ok && result.success) {
-    router.push("/events");
-  } else {
-    alert("Error creating event: " + result.error);
-  }
-};
+    if (res.ok && result.success) {
+      router.push("/events");
+    } else {
+      alert("Error creating event: " + result.error);
+    }
+  };
 
   return (
     <form
       onSubmit={handleSubmit}
       className="bg-black border border-neutral-800 p-6 rounded-2xl shadow-md w-full max-w-xl space-y-5"
     >
-      <h2 className="text-white text-2xl font-semibold mb-2">Create New Event</h2>
+      <h2 className="text-white text-2xl font-semibold mb-2">
+        Create New Event
+      </h2>
 
       <input
         type="text"
-        placeholder="Event Title"
+        placeholder="Event name"
         className="w-full p-2 rounded-md bg-neutral-900 text-white border border-neutral-700"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
       />
 
       <textarea

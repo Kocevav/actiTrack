@@ -7,6 +7,7 @@ export function FloatingNavBar({
   setShowForm,
   whichForm,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setShowForm: any;
   whichForm: boolean;
 }) {
