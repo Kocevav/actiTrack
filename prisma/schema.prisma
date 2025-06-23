@@ -11,12 +11,95 @@ model User {
   id            String          @id @default(uuid()) @map("_id") // UUID
   name          String?
   email         String?         @unique
+  password      String?
   emailVerified DateTime?
   image         String?
+  dateOfBirth   String?
+
+
+  ownedEvents   Event[]         @relation("EventOwner")
+  eventParticipation EventParticipation[]
+  comments      Comment[]       @relation("CommentOwner")
+  activities    Activity[]      @relation("UserActivities")
+
+  followedBy    Follow[]        @relation("FollowedBy")
+  following     Follow[]        @relation("Following")
+
   accounts      Account[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+
+model Follow {
+  id           String   @id @default(uuid()) @map("_id")
+  
+  follower     User     @relation("Following", fields: [followerId], references: [id])
+  followerId   String
+
+  following    User     @relation("FollowedBy", fields: [followingId], references: [id])
+  followingId  String
+
+  createdAt    DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+enum EventStatus {
+  CREATED
+  FINISHED
+}
+
+model Event {
+  id          String   @id @default(uuid()) @map("_id")
+  name        String
+  description String
+
+  owner       User     @relation("EventOwner", fields: [ownerId], references: [id])
+  ownerId     String
+
+  time        DateTime
+  place       String
+
+  participants EventParticipation[]
+  status       EventStatus
+  comments     Comment[] @relation("EventComments")
+}
+
+model EventParticipation {
+  id      String   @id @default(uuid()) @map("_id")
+
+  user    User     @relation(fields: [userId], references: [id])
+  userId  String
+
+  event   Event    @relation(fields: [eventId], references: [id])
+  eventId String
+}
+
+model Comment {
+  id          String   @id @default(uuid()) @map("_id")
+
+  owner       User     @relation("CommentOwner", fields: [ownerId], references: [id])
+  ownerId     String
+
+  toWhoEvent  Event    @relation("EventComments", fields: [eventId], references: [id])
+  eventId     String
+
+  description String
+  rating      Int
+}
+
+model Activity {
+  id        String   @id @default(uuid()) @map("_id")
+
+  owner     User     @relation("UserActivities", fields: [ownerId], references: [id])
+  ownerId   String
+
+  type      String?
+  duration  Float?
+  distance  Float?
+  date      DateTime?
 }
 
 model Account {

@@ -5,6 +5,7 @@ import { login } from "@/lib/actions/auth";
 import { Oxanium } from "next/font/google";
 import { signInSchema } from "../../lib/zod";
 import { signIn } from "next-auth/react";
+import bcrypt from "bcrypt";
 
 const oxanium = Oxanium({
   subsets: ["latin"],
