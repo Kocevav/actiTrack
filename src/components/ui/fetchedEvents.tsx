@@ -15,13 +15,14 @@ const FetchedEvents = () => {
           cache: "no-store",
         });
         const data = await res.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const formattedEvents: EventItem[] = data.events.map((event: any) => ({
-          title: event.title,
+          title: event.name,
           description: event.description,
-          owner: event.owner,
+          owner: event.owner?.name || "Unknown",
           time: new Date(event.time).toLocaleString("en-GB"),
           place: event.place,
-          participants: event.participants,
+          participants: event.participants || 0,
           status: event.status,
           comments: event.comments || [],
           link: `/events/${event.id}`,
