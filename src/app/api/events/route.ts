@@ -7,7 +7,15 @@ export async function POST(req: Request) {
   try {
     const session = await auth();
 
-    const userId = session.userId; // use userId, not id
+
+    if(!session || !session.userId) {
+      return NextResponse.json(
+        { success : false, error : "Unauthorized"},
+        { status : 401 }
+      );
+    }
+
+    const userId = session.userId;
 
     const user = await db.user.findFirst({ where: { id: userId } });
     if (!user) {
