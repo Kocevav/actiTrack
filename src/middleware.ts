@@ -1,39 +1,37 @@
-import { auth } from "@/auth";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { handleApiAuth } from "./middleware/api.middleware";
+import { handleLogout, handlePageAuth } from "./middleware/pages.middleware";
 
-export default auth(async (request) => {
+export default async function middleware(request: NextRequest) {
+  
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,
   });
 
-  const isLoggedIn = !!token;
+  const path = request.nextUrl.pathname;
 
-  const isApiAuthRouter = request.nextUrl.pathname.startsWith("/api/auth");
-  console.log(isLoggedIn);
-
-  if (isApiAuthRouter) return;
-
-  if (request.nextUrl.pathname == "/logout") {
-    const response = NextResponse.redirect(new URL("/", request.url));
-
-    response.cookies.set("next-auth.session-token", "", { maxAge: 0 });
-    response.cookies.set("__Secure-next-auth.session-token", "", { maxAge: 0 });
-    response.cookies.set("next-auth.csrf-token", "", { maxAge: 0 });
-    response.cookies.set("next-auth.callback-url", "", { maxAge: 0 });
+  // NextAuth handles /api/auth routes
+  if (path.startsWith("/api/auth")) {
+    return NextResponse.next();
   }
 
-  if (isLoggedIn && request.nextUrl.pathname == "/") {
-    return NextResponse.redirect(new URL("/events", request.url));
+  // Handle logout first (special case)
+  if (path === "/logout") {
+    return handleLogout(request);
   }
 
-  if (!isLoggedIn && request.nextUrl.pathname != "/") {
-    return NextResponse.redirect(new URL("/", request.url));
+  // Handle API routes
+  if (path.startsWith("/api")) {
+    const response = await handleApiAuth(request, token);
+    return response || NextResponse.next();
   }
 
-  return NextResponse.next();
-});
+  // Handle page routes (everything else)
+  const response = await handlePageAuth(request, token);
+  return response || NextResponse.next();
+}
 
 export const config = {
   matcher: ["/((?!.*\\.).*)", "/favicon.ico"],

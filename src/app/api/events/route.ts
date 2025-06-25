@@ -1,15 +1,13 @@
-import { auth } from "@/auth"; // провери дали кај тебе е на друга локација
 import { NextResponse } from "next/server";
 import { prisma } from "@/utils/prisma";
 import { db } from "@/db";
+import { requireAuth } from "@/lib/auth-helper";
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
+    const session = await requireAuth();
 
-    const userId = session.userId; // use userId, not id
-
-    const user = await db.user.findFirst({ where: { id: userId } });
+    const user = await db.user.findFirst({ where: { id: session.userId } });
     if (!user) {
       return NextResponse.json(
         { success: false, error: "User not found" },
@@ -33,7 +31,7 @@ export async function POST(req: Request) {
         name,
         description,
         owner: {
-          connect: { id: userId }, // use userId here
+          connect: { id: session.userId }, // use userId here
         },
         time: new Date(time),
         place,
@@ -58,6 +56,9 @@ export async function GET() {
   try {
     const events = await prisma.event.findMany({
       orderBy: { time: "asc" },
+      include : {
+        owner : true
+      }
     });
 
     return NextResponse.json({ success: true, events });
