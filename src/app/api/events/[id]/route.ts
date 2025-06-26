@@ -78,3 +78,42 @@ export async function GET(
     );
   }
 }
+
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const session = await requireAuth();
+    const userId = session.userId;
+    const { id } = params;
+
+    const body = await req.json();
+    const { name, description, place, time, status } = body;
+
+    const event = await prisma.event.findUnique({
+      where: { id }
+    });
+
+    if (!event) {
+      return NextResponse.json({ success: false, error: "Event not found" }, { status: 404 });
+    }
+
+    if (event.ownerId !== userId) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 403 });
+    }
+
+    const updated = await prisma.event.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        place,
+        time: new Date(time),
+        status
+      }
+    });
+
+    return NextResponse.json({ success: true, event: updated });
+  } catch (error) {
+    console.error("Error updating event:", error);
+    return NextResponse.json({ success: false, error: "Update failed" }, { status: 500 });
+  }
+}

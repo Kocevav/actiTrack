@@ -29,6 +29,26 @@ export default function EventDetails() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
 
+  // New states for current user and event owner IDs
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [eventOwnerId, setEventOwnerId] = useState<string | null>(null);
+
+  // Fetch current logged-in user ID
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await fetch("/api/auth/session");
+        if (!res.ok) throw new Error("Failed to get user session");
+        const data = await res.json();
+        setCurrentUserId(data.userId); // adjust 'userId' if your API uses a different key
+      } catch (err) {
+        console.error("Error fetching user session:", err);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
+  // Fetch event data and set event owner ID
   useEffect(() => {
     if (!event) return;
     
@@ -52,6 +72,7 @@ export default function EventDetails() {
           link: `/events/${event}`,
         };
         setEventData(mappedEvent);
+        setEventOwnerId(data.event.owner?.id || null);  // store owner ID here
         setComments(data.event.comments || []);
         setHasJoined(data.event.hasJoined || false);
         setLoading(false);
@@ -209,33 +230,48 @@ export default function EventDetails() {
 
         {/* Join/Leave Event Button */}
         <div className="mt-6">
-          {hasJoined ? (
-            <button
-              onClick={handleLeaveEvent}
-              disabled={isJoining}
-              className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-            >
-              {isJoining ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                "❌"
-              )}
-              {isJoining ? "Leaving..." : "Leave Event"}
-            </button>
-          ) : (
-            <button
-              onClick={handleJoinEvent}
-              disabled={isJoining}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-            >
-              {isJoining ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                "🎉"
-              )}
-              {isJoining ? "Joining..." : "Join Event"}
-            </button>
-          )}
+
+          {/* Action Buttons: Join/Leave & Edit */}
+          <div className="mt-6 flex flex-wrap gap-4">
+            {hasJoined ? (
+              <button
+                onClick={handleLeaveEvent}
+                disabled={isJoining}
+                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-5 py-2.5 rounded-md font-medium transition-colors duration-200 shadow-sm"
+              >
+                {isJoining ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  "❌"
+                )}
+                {isJoining ? "Leaving..." : "Leave Event"}
+              </button>
+            ) : (
+              <button
+                onClick={handleJoinEvent}
+                disabled={isJoining}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-5 py-2.5 rounded-md font-medium transition-colors duration-200 shadow-sm"
+              >
+                {isJoining ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  "🎉"
+                )}
+                {isJoining ? "Joining..." : "Join Event"}
+              </button>
+            )}
+
+            {/* Conditionally render Edit button only if user is event owner */}
+            {currentUserId && eventOwnerId && currentUserId === eventOwnerId && (
+              <Link
+                href={`/events/${event}/edit`}
+                className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-5 py-2.5 rounded-md font-medium transition-colors duration-200 shadow-sm"
+              >
+                Edit Event
+              </Link>
+            )}
+          </div>
+
         </div>
         
         {/* Add Comment Form */}
@@ -254,36 +290,42 @@ export default function EventDetails() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Rating (optional)
-              </label>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setCommentRating(commentRating === star ? null : star)}
-                    className={`text-2xl transition-colors ${
-                      commentRating && star <= commentRating
-                        ? 'text-yellow-400'
-                        : 'text-gray-500 hover:text-yellow-300'
-                    }`}
-                    disabled={isSubmittingComment}
-                  >
-                    ⭐
-                  </button>
-                ))}
-                {commentRating && (
-                  <button
-                    type="button"
-                    onClick={() => setCommentRating(null)}
-                    className="ml-2 text-sm text-gray-400 hover:text-gray-300"
-                    disabled={isSubmittingComment}
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
+              
+              {eventData.status === "FINISHED" && (
+                <>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Rating (optional)
+                  </label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setCommentRating(commentRating === star ? null : star)}
+                        className={`text-2xl transition-colors ${
+                          commentRating && star <= commentRating
+                            ? 'text-yellow-400'
+                            : 'text-gray-500 hover:text-yellow-300'
+                        }`}
+                        disabled={isSubmittingComment}
+                      >
+                        ⭐
+                      </button>
+                    ))}
+                    {commentRating && (
+                      <button
+                        type="button"
+                        onClick={() => setCommentRating(null)}
+                        className="ml-2 text-sm text-gray-400 hover:text-gray-300"
+                        disabled={isSubmittingComment}
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+
             </div>
             
             <button
