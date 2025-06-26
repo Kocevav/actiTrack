@@ -12,6 +12,8 @@ export default function EventDetails() {
   const [eventData, setEventData] = useState<EventItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isJoining, setIsJoining] = useState(false);
+  const [hasJoined, setHasJoined] = useState(false);
 
   useEffect(() => {
     if (!event) return; // Don't fetch if no event ID
@@ -37,6 +39,7 @@ export default function EventDetails() {
           link: `/events/${event}`, // Add the required link property
         };
         setEventData(mappedEvent);
+        setHasJoined(data.event.hasJoined || false); // Check if user already joined
         setLoading(false);
       })
       .catch(err => {
@@ -44,6 +47,72 @@ export default function EventDetails() {
         setLoading(false);
       });
   }, [event]); // Now `event` is properly defined!
+
+  const handleJoinEvent = async () => {
+    if (!event || isJoining) return;
+
+    setIsJoining(true);
+    try {
+      const response = await fetch(`/api/events/${event}/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to join event');
+      }
+
+      const data = await response.json();
+      
+      // Update the local state
+      setEventData(prev => prev ? {
+        ...prev,
+        participants: data.participantCount
+      } : null);
+      setHasJoined(true);
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to join event');
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  const handleLeaveEvent = async () => {
+    if (!event || isJoining) return;
+
+    setIsJoining(true);
+    try {
+      const response = await fetch(`/api/events/${event}/leave`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to leave event');
+      }
+
+      const data = await response.json();
+      
+      // Update the local state
+      setEventData(prev => prev ? {
+        ...prev,
+        participants: data.participantCount
+      } : null);
+      setHasJoined(false);
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to leave event');
+    } finally {
+      setIsJoining(false);
+    }
+  };
   
   if (loading) {
     return (
@@ -85,6 +154,37 @@ export default function EventDetails() {
           <p className="text-gray-300"><strong>📍 Place:</strong> {eventData.place}</p>
           <p className="text-gray-300"><strong>👥 Participants:</strong> {eventData.participants}</p>
           <p className="text-gray-300"><strong>📌 Status:</strong> {eventData.status}</p>
+        </div>
+
+        {/* Join/Leave Event Button */}
+        <div className="mt-6">
+          {hasJoined ? (
+            <button
+              onClick={handleLeaveEvent}
+              disabled={isJoining}
+              className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+            >
+              {isJoining ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                "❌"
+              )}
+              {isJoining ? "Leaving..." : "Leave Event"}
+            </button>
+          ) : (
+            <button
+              onClick={handleJoinEvent}
+              disabled={isJoining}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+            >
+              {isJoining ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                "🎉"
+              )}
+              {isJoining ? "Joining..." : "Join Event"}
+            </button>
+          )}
         </div>
         
         {/* Comments Section */}

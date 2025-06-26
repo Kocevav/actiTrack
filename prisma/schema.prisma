@@ -75,6 +75,9 @@ model EventParticipation {
 
   event   Event    @relation(fields: [eventId], references: [id])
   eventId String
+  joinedAt  DateTime @default(now())
+   @@unique([eventId, userId], name: "event_user_unique")
+
 }
 
 model Comment {
@@ -88,6 +91,8 @@ model Comment {
 
   description String
   rating      Int
+  createdAt DateTime @default(now())
+
 }
 
 model Activity {
