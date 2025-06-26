@@ -7,60 +7,123 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Account {
-  id                String @id @default(auto()) @map("_id") @db.ObjectId
-  /// Field referred in an index, but found no data to define the type.
-  provider          Json?
-  /// Field referred in an index, but found no data to define the type.
-  providerAccountId Json?
+model User {
+  id            String          @id @default(uuid()) @map("_id") // UUID
+  name          String?
+  email         String?         @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  dateOfBirth   String?
 
-  @@unique([provider, providerAccountId])
+
+  ownedEvents   Event[]         @relation("EventOwner")
+  eventParticipation EventParticipation[]
+  comments      Comment[]       @relation("CommentOwner")
+  activities    Activity[]      @relation("UserActivities")
+
+  followedBy    Follow[]        @relation("FollowedBy")
+  following     Follow[]        @relation("Following")
+
+  accounts      Account[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Activity {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-}
-
-model Comment {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-}
-
-model Event {
-  id          String   @id @map("_id")
-  description String
-  name        String
-  ownerId     String
-  place       String
-  status      String
-  time        DateTime @db.Date
-}
-
-model EventParticipation {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  /// Field referred in an index, but found no data to define the type.
-  eventId Json?
-  /// Field referred in an index, but found no data to define the type.
-  userId  Json?
-
-  @@unique([eventId, userId])
-}
 
 model Follow {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
-  /// Field referred in an index, but found no data to define the type.
-  followerId  Json?
-  /// Field referred in an index, but found no data to define the type.
-  followingId Json?
+  id           String   @id @default(uuid()) @map("_id")
+  
+  follower     User     @relation("Following", fields: [followerId], references: [id])
+  followerId   String
+
+  following    User     @relation("FollowedBy", fields: [followingId], references: [id])
+  followingId  String
+
+  createdAt    DateTime @default(now())
 
   @@unique([followerId, followingId])
 }
 
-model User {
-  id          String   @id @map("_id")
-  createdAt   DateTime @db.Date
-  dateOfBirth String?
-  email       String   @unique
+enum EventStatus {
+  CREATED
+  FINISHED
+}
+
+model Event {
+  id          String   @id @default(uuid()) @map("_id")
   name        String
-  password    String
-  updatedAt   DateTime @db.Date
+  description String
+
+  owner       User     @relation("EventOwner", fields: [ownerId], references: [id])
+  ownerId     String
+
+  time        DateTime
+  place       String
+
+  participants EventParticipation[]
+  status       EventStatus
+  comments     Comment[] @relation("EventComments")
+}
+
+model EventParticipation {
+  id      String   @id @default(uuid()) @map("_id")
+  
+  user    User     @relation(fields: [userId], references: [id])
+  userId  String
+  
+  event   Event    @relation(fields: [eventId], references: [id])
+  eventId String
+  
+  @@unique([eventId, userId], name: "event_user_unique")
+}
+
+model Comment {
+  id          String   @id @default(uuid()) @map("_id")
+  
+  owner       User     @relation("CommentOwner", fields: [ownerId], references: [id])
+  ownerId     String
+  
+  toWhoEvent  Event    @relation("EventComments", fields: [eventId], references: [id])
+  eventId     String
+  
+  description String
+  rating      Int?    
+  
+  createdAt DateTime @default(now())
+}
+
+model Activity {
+  id        String   @id @default(uuid()) @map("_id")
+
+  owner     User     @relation("UserActivities", fields: [ownerId], references: [id])
+  ownerId   String
+
+  type      String?
+  duration  Float?
+  distance  Float?
+  date      DateTime?
+}
+
+model Account {
+  id                String  @id @default(uuid()) @map("_id")  // UUID
+  userId            String 
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
 }
