@@ -5,6 +5,8 @@ import Link from "next/link";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { useEffect, useState } from "react";
 import { EventItem } from "@/types/event";
+import { useRouter } from "next/navigation";
+
 
 interface Comment {
   id: string;
@@ -22,6 +24,8 @@ export default function EventDetails() {
   const [error, setError] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
+  const router = useRouter();
+
   
   // Comment form state
   const [commentText, setCommentText] = useState("");
@@ -212,6 +216,29 @@ export default function EventDetails() {
       </div>
     );
   }
+  const handleDeleteEvent = async () => {
+  const confirmed = confirm("Are you sure you want to delete this event?");
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`/api/events/${event}`, {
+      method: "DELETE",
+    });
+
+    const result = await res.json();
+
+    if (res.ok && result.success) {
+      alert("Event deleted successfully");
+      router.push("/events");
+    } else {
+      alert("Failed to delete event: " + result.error);
+    }
+  } catch (err) {
+    console.error("Delete failed", err);
+    alert("Something went wrong while deleting the event.");
+  }
+};
+
   
   return (
     <div className="w-full min-h-screen bg-neutral-950 relative">
@@ -261,15 +288,25 @@ export default function EventDetails() {
               </button>
             )}
 
-            {/* Conditionally render Edit button only if user is event owner */}
-            {currentUserId && eventOwnerId && currentUserId === eventOwnerId && (
-              <Link
-                href={`/events/${event}/edit`}
-                className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-5 py-2.5 rounded-md font-medium transition-colors duration-200 shadow-sm"
-              >
-                Edit Event
-              </Link>
-            )}
+          {/* Conditionally render Edit and Delete buttons only if user is event owner */}
+{currentUserId && eventOwnerId && currentUserId === eventOwnerId && (
+  <div className="flex gap-4">
+    <Link
+      href={`/events/${event}/edit`}
+      className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-5 py-2.5 rounded-md font-medium transition-colors duration-200 shadow-sm"
+    >
+     Edit Event
+    </Link>
+
+    <button
+      onClick={handleDeleteEvent}
+      className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-md font-medium transition-colors duration-200 shadow-sm"
+    >
+     Delete
+    </button>
+  </div>
+)}
+
           </div>
 
         </div>

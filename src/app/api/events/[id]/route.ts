@@ -117,3 +117,46 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ success: false, error: "Update failed" }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
+  const { id: eventId } = context.params;
+  const session = await requireAuth();
+  const userId = session.userId;
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+  });
+
+  if (!event) {
+    return NextResponse.json({ error: "Event not found" }, { status: 404 });
+  }
+
+  if (event.ownerId !== userId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  await prisma.eventParticipation.deleteMany({
+    where: {
+      eventId: eventId,
+    },
+  });
+
+  await prisma.comment.deleteMany({
+    where: {
+      eventId: eventId,
+    },
+  });
+
+  await prisma.event.delete({
+    where: { id: eventId },
+  });
+
+  return NextResponse.json({ success: true });
+}
