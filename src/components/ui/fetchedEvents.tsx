@@ -17,16 +17,17 @@ const FetchedEvents = () => {
         const data = await res.json();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const formattedEvents: EventItem[] = data.events.map((event: any) => ({
-          title: event.name,
-          description: event.description,
-          owner: event.owner?.name || "Unknown",
-          time: new Date(event.time).toLocaleString("en-GB"),
-          place: event.place,
-          participants: event.participants || 0,
-          status: event.status,
-          comments: event.comments || [],
-          link: `/events/${event.id}`,
-        }));
+  title: event.name,
+  description: event.description,
+  owner: event.owner?.name || "Unknown",
+  time: new Date(event.time).toLocaleString("en-GB"),
+  place: event.place,
+  participants: event.participants || 0,
+  status: event.status,
+  comments: event.comments || [],
+  link: `/events/${event.id}`,
+}));
+
         setEvents(formattedEvents);
       } catch (error) {
         console.error("Error fetching events:", error);

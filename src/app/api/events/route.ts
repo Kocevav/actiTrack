@@ -4,6 +4,8 @@ import { db } from "@/db";
 import { requireAuth } from "@/lib/auth-helper";
 
 export async function POST(req: Request) {
+
+  
   try {
     const session = await requireAuth();
 
@@ -56,12 +58,22 @@ export async function GET() {
   try {
     const events = await prisma.event.findMany({
       orderBy: { time: "asc" },
-      include : {
-        owner : true
-      }
+      include: {
+        owner: true,
+        _count: {
+          select: {
+            participants: true,
+          },
+        },
+      },
     });
 
-    return NextResponse.json({ success: true, events });
+    const formattedEvents = events.map((event) => ({
+      ...event,
+      participants: event._count.participants,
+    }));
+
+    return NextResponse.json({ success: true, events: formattedEvents });
   } catch (error) {
     console.error("Error fetching events:", error);
     return NextResponse.json(

@@ -62,18 +62,6 @@ export const HoverEffect = ({
   <p className="text-sm text-gray-300 mt-1">📍 <strong>Place:</strong> {item.place}</p>
   <p className="text-sm text-gray-300 mt-1">👥 <strong>Participants:</strong> {item.participants}</p>
   <p className="text-sm text-gray-300 mt-1">📌 <strong>Status:</strong> {item.status}</p>
-
-  {/* Comments */}
-  <div className="mt-3">
-    <strong className="text-gray-400">💬 Comments:</strong>
-    <ul className="text-gray-400 text-xs mt-1">
-      {item.comments.length > 0 ? (
-        item.comments.map((comment, i) => <li key={i}>• {comment}</li>)
-      ) : (
-        <li>No comments yet.</li>
-      )}
-    </ul>
-  </div>
 </Card>
 
         </Link>
