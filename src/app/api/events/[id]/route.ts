@@ -11,7 +11,7 @@ export async function GET(
   try {
     const session = await requireAuth();
     const userId = session.userId;
-    const { id: eventId } = await params; // Await params before using
+    const { id: eventId } = await params; 
 
     const event = await prisma.event.findUnique({
       where: { id: eventId },

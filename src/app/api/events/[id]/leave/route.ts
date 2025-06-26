@@ -7,7 +7,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-        const { id: eventId } = await params; // Await params before using
+        const { id: eventId } = await params;
 
   const session = await requireAuth();
     const userId = session.userId;

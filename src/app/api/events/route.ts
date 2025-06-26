@@ -31,7 +31,7 @@ export async function POST(req: Request) {
         name,
         description,
         owner: {
-          connect: { id: session.userId }, // use userId here
+          connect: { id: session.userId }, 
         },
         time: new Date(time),
         place,

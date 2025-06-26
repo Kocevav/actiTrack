@@ -6,19 +6,33 @@ import { BackgroundBeams } from "@/components/ui/background-beams";
 import { useEffect, useState } from "react";
 import { EventItem } from "@/types/event";
 
+interface Comment {
+  id: string;
+  description: string;
+  rating: number | null;
+  owner: string;
+  createdAt: string;
+}
+
 export default function EventDetails() {
   const params = useParams();
-  const event = params.event as string; // Get event ID from URL
+  const event = params.event as string;
   const [eventData, setEventData] = useState<EventItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
+  
+  // Comment form state
+  const [commentText, setCommentText] = useState("");
+  const [commentRating, setCommentRating] = useState<number | null>(null);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
 
   useEffect(() => {
-    if (!event) return; // Don't fetch if no event ID
+    if (!event) return;
     
-    fetch(`/api/events/${event}`) // Use backticks for template literal!
+    fetch(`/api/events/${event}`)
       .then(res => {
         if (!res.ok) {
           throw new Error('Event not found');
@@ -26,27 +40,27 @@ export default function EventDetails() {
         return res.json();
       })
       .then(data => {
-        // Map API data to frontend format
         const mappedEvent = {
-          title: data.event.name, // API uses 'name', frontend expects 'title'
+          title: data.event.name,
           description: data.event.description,
-          owner: data.event.owner?.name || "Unknown", // Extract name from owner object
+          owner: data.event.owner?.name || "Unknown",
           time: new Date(data.event.time).toLocaleString("en-GB"),
           place: data.event.place,
           participants: data.event.participants || 0,
           status: data.event.status,
           comments: data.event.comments || [],
-          link: `/events/${event}`, // Add the required link property
+          link: `/events/${event}`,
         };
         setEventData(mappedEvent);
-        setHasJoined(data.event.hasJoined || false); // Check if user already joined
+        setComments(data.event.comments || []);
+        setHasJoined(data.event.hasJoined || false);
         setLoading(false);
       })
       .catch(err => {
         setError(err.message);
         setLoading(false);
       });
-  }, [event]); // Now `event` is properly defined!
+  }, [event]);
 
   const handleJoinEvent = async () => {
     if (!event || isJoining) return;
@@ -67,7 +81,6 @@ export default function EventDetails() {
 
       const data = await response.json();
       
-      // Update the local state
       setEventData(prev => prev ? {
         ...prev,
         participants: data.participantCount
@@ -100,7 +113,6 @@ export default function EventDetails() {
 
       const data = await response.json();
       
-      // Update the local state
       setEventData(prev => prev ? {
         ...prev,
         participants: data.participantCount
@@ -111,6 +123,45 @@ export default function EventDetails() {
       setError(err instanceof Error ? err.message : 'Failed to leave event');
     } finally {
       setIsJoining(false);
+    }
+  };
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!commentText.trim() || !event || isSubmittingComment) return;
+
+    setIsSubmittingComment(true);
+    try {
+      const response = await fetch(`/api/events/${event}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          description: commentText.trim(),
+          rating: commentRating
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add comment');
+      }
+
+      const data = await response.json();
+      
+      // Add new comment to the list
+      setComments(prev => [data.comment, ...prev]);
+      
+      // Clear form
+      setCommentText("");
+      setCommentRating(null);
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add comment');
+    } finally {
+      setIsSubmittingComment(false);
     }
   };
   
@@ -187,16 +238,98 @@ export default function EventDetails() {
           )}
         </div>
         
+        {/* Add Comment Form */}
+        <div className="mt-8 bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl border border-gray-700/50">
+          <h2 className="text-xl font-semibold text-gray-200 mb-4">Leave a comment </h2>
+          <form onSubmit={handleSubmitComment} className="space-y-4">
+            <div>
+              <textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Share your thoughts about this event..."
+                rows={4}
+                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                disabled={isSubmittingComment}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Rating (optional)
+              </label>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setCommentRating(commentRating === star ? null : star)}
+                    className={`text-2xl transition-colors ${
+                      commentRating && star <= commentRating
+                        ? 'text-yellow-400'
+                        : 'text-gray-500 hover:text-yellow-300'
+                    }`}
+                    disabled={isSubmittingComment}
+                  >
+                    ⭐
+                  </button>
+                ))}
+                {commentRating && (
+                  <button
+                    type="button"
+                    onClick={() => setCommentRating(null)}
+                    className="ml-2 text-sm text-gray-400 hover:text-gray-300"
+                    disabled={isSubmittingComment}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            <button
+              type="submit"
+              disabled={!commentText.trim() || isSubmittingComment}
+              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+            >
+              {isSubmittingComment ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                "💬"
+              )}
+              {isSubmittingComment ? "Posting..." : "Post Comment"}
+            </button>
+          </form>
+        </div>
+        
         {/* Comments Section */}
-        <div className="mt-6 bg-gray-800/50 backdrop-blur-sm p-4 rounded-xl border border-gray-700/50">
-          <h2 className="text-xl font-semibold text-gray-200">💬 Comments</h2>
-          <ul className="mt-2 text-gray-300">
-            {eventData.comments.length > 0 ? (
-              eventData.comments.map((comment, i) => <li key={i} className="py-1">• {comment}</li>)
+        <div className="mt-6 bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl border border-gray-700/50">
+          <h2 className="text-xl font-semibold text-gray-200 mb-4">💬 Comments ({comments.length})</h2>
+          <div className="space-y-4">
+            {comments.length > 0 ? (
+              comments.map((comment) => (
+                <div key={comment.id} className="bg-gray-700/30 p-4 rounded-lg border border-gray-600/30">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-medium text-gray-200">{comment.owner}</span>
+                    <div className="flex items-center gap-2">
+                      {comment.rating && (
+                        <div className="flex">
+                          {Array.from({ length: comment.rating }, (_, i) => (
+                            <span key={i} className="text-yellow-400 text-sm">⭐</span>
+                          ))}
+                        </div>
+                      )}
+                      <span className="text-sm text-gray-400">
+                        {new Date(comment.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-gray-300">{comment.description}</p>
+                </div>
+              ))
             ) : (
-              <li>No comments yet.</li>
+              <p className="text-gray-400 text-center py-8">No comments yet. Be the first to share your thoughts!</p>
             )}
-          </ul>
+          </div>
         </div>
         
         <Link href="/events" className="mt-6 inline-block text-blue-400 hover:underline">
