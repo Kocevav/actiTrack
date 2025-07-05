@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useRouter, useParams } from "next/navigation";
+import Spinner from "@/components/ui/spiner";
 
 export default function UpdateEventForm() {
   const [name, setName] = useState("");
@@ -12,6 +13,7 @@ export default function UpdateEventForm() {
   const [dateTime, setDateTime] = useState<Date | null>(null);
   const [status, setStatus] = useState<"CREATED" | "FINISHED">("CREATED");
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
 
   const router = useRouter();
   const params = useParams();
@@ -40,8 +42,8 @@ export default function UpdateEventForm() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    const confirmed = confirm("Are you sure you want to update this event?");
-    if (!confirmed) return;
+    if (!confirm) return;
+    setUpdating(true);
 
     const res = await fetch(`/api/events/${eventId}`, {
       method: "PUT",
@@ -51,9 +53,10 @@ export default function UpdateEventForm() {
         description,
         place: location,
         time: dateTime,
-        status,  // send status as well
+        status,
       }),
     });
+    setUpdating(false);
 
     const result = await res.json();
 
@@ -64,16 +67,15 @@ export default function UpdateEventForm() {
     }
   };
 
-  if (loading) return <p className="text-white">Loading...</p>;
+  if (loading) return <Spinner text="Loading..." />;
+  if (updating) return <Spinner text="Updating..." />;
 
   return (
     <form
       onSubmit={handleUpdate}
       className="bg-black border border-neutral-800 p-6 rounded-2xl shadow-md w-full max-w-xl space-y-5"
     >
-      <h2 className="text-white text-2xl font-semibold mb-2">
-        Update Event
-      </h2>
+      <h2 className="text-white text-2xl font-semibold mb-2">Update Event</h2>
 
       <input
         type="text"
@@ -122,6 +124,7 @@ export default function UpdateEventForm() {
         >
           <option value="CREATED">Created</option>
           <option value="FINISHED">Finished</option>
+          <option value="ARCHIVED">Archived</option>
         </select>
       </div>
 

@@ -1,41 +1,53 @@
 "use client";
-import React from "react";
-import { BackgroundBeams } from "../../components/ui/background-beams";
-import FetchedEvents from "../../components/ui/fetchedEvents";
-import Link from "next/link";
+import React, { Suspense, useState } from "react";
+import { FetchedEvents } from "../../components/ui/fetchedEvents";
+import { useRouter } from "next/navigation";
+import Spinner from "@/components/ui/spiner";
+import { CreateEventButton } from "@/components/events/CreateEventButton";
 
 export function EventsPage() {
-  return (
-    <div className="w-full flex flex-1 min-h-screen bg-neutral-950 relative flex-col items-center justify-center antialiased">
-      <BackgroundBeams />
-      
-        {/* Header with Create Button */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto flex justify-between items-center px-8 mt-8 mb-4">
-        <h1 className="text-3xl font-bold text-white">Events</h1>
-        <Link href="/events/create">
-          <button className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors duration-300 flex items-center">
-           
-          {/* <button
-            className="bg-orange-600 hover:bg-orange-700 transition duration-200 w-full text-white rounded-md h-10 font-medium shadow-md"
-            type="submit"
-          > */}
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-5 w-5 mr-2" 
-              viewBox="0 0 20 20" 
-              fill="currentColor"
-            >
-              <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            Create New Event
-          </button>
-        </Link>
-      </div>
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-        <div className="w-full max-w-5xl px-8 mx-auto mt-4">
-          <FetchedEvents />
-       </div>
+  const handleHostClick = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    setLoading(true);
+    setTimeout(() => {
+      router.push("/events/create");
+    }, 100);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen w-full">
+      {/* Overlay Spinner when loading */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <Spinner text="Preparing your event form…" />
+        </div>
+      )}
+
+      <div className="relative z-10 w-full max-w-5xl mx-auto mt-12 mb-8 px-6 py-8 bg-neutral-900/80 rounded-2xl shadow-2xl border border-orange-400/10">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
+          <h1 className="text-4xl font-extrabold text-white tracking-tight drop-shadow-lg">
+            Discover Inspiring Events
+          </h1>
+          <CreateEventButton onClick={handleHostClick} loading={loading} />
+        </div>
+
+        {/* Suspense for loading spinner */}
+        <div className="w-full max-w-[900px] mx-auto mt-12 mb-8 px-4">
+          <Suspense fallback={<Spinner />}>
+            <FetchedEvents />
+          </Suspense>
+        </div>
       </div>
+      {/* Decorative Glow */}
+      <div
+        aria-hidden
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[60vw] h-[20vh] bg-orange-500/10 blur-3xl rounded-full pointer-events-none"
+      />
+    </div>
   );
 }
+
 export default EventsPage;
