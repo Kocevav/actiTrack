@@ -11,44 +11,30 @@ export async function GET(
   try {
     const session = await requireAuth();
     const userId = session.userId;
-    const { id: eventId } = await params; 
-
+    const { id: eventId } = await params;
+    console.log(session, userId);
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       include: {
-        owner: {
+        owner: { select: { id: true, name: true, email: true } },
+        participants: { select: { userId: true } },
+        comments: {
           select: {
             id: true,
-            name: true,
-            email: true
-          }
-        },
-        participants: {
-          select: {
-            userId: true
-          }
-        },
-        comments: {
-          include: {
-            owner: {
-              select: {
-                name: true
-              }
-            }
+            description: true,
+            rating: true,
+            createdAt: true,
+            owner: { select: { name: true } },
           },
-          orderBy: {
-            createdAt: 'desc'
-          }
-        }
-      }
+        },
+      },
     });
 
     if (!event) {
       return NextResponse.json({ error: "Event not found!" }, { status: 404 });
     }
 
-    // Check if the current user has joined the event
-    const hasJoined = event.participants.some(p => p.userId === userId);
+    const hasJoined = event.participants.some((p) => p.userId === userId);
 
     const response = {
       id: event.id,
@@ -60,13 +46,13 @@ export async function GET(
       participants: event.participants.length,
       status: event.status,
       hasJoined,
-      comments: event.comments.map(comment => ({
+      comments: event.comments.map((comment) => ({
         id: comment.id,
         description: comment.description,
         rating: comment.rating,
         owner: comment.owner.name,
-        createdAt: comment.createdAt
-      }))
+        createdAt: comment.createdAt,
+      })),
     };
 
     return NextResponse.json({ event: response });
@@ -79,25 +65,35 @@ export async function GET(
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const session = await requireAuth();
     const userId = session.userId;
     const { id } = params;
+    console.log(id);
 
     const body = await req.json();
     const { name, description, place, time, status } = body;
 
     const event = await prisma.event.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!event) {
-      return NextResponse.json({ success: false, error: "Event not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Event not found" },
+        { status: 404 }
+      );
     }
 
     if (event.ownerId !== userId) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 403 });
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 403 }
+      );
     }
 
     const updated = await prisma.event.update({
@@ -107,22 +103,25 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         description,
         place,
         time: new Date(time),
-        status
-      }
+        status,
+      },
     });
 
     return NextResponse.json({ success: true, event: updated });
   } catch (error) {
     console.error("Error updating event:", error);
-    return NextResponse.json({ success: false, error: "Update failed" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Update failed" },
+      { status: 500 }
+    );
   }
 }
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id: eventId } = context.params;
+  const { id: eventId } = await context.params;
   const session = await requireAuth();
   const userId = session.userId;
 

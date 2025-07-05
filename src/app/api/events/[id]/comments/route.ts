@@ -1,7 +1,6 @@
-
-import { requireAuth } from "@/lib/auth-helper";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/utils/prisma";
+import { requireAuth } from "@/lib/auth-helper";
 
 export async function POST(
   req: NextRequest,
@@ -11,16 +10,19 @@ export async function POST(
     const session = await requireAuth();
     const userId = session.userId;
     const { id: eventId } = await params;
-    
+
     const body = await req.json();
     const { description, rating } = body;
 
     if (!description || description.trim().length === 0) {
-      return NextResponse.json({ error: "Comment description is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Comment description is required" },
+        { status: 400 }
+      );
     }
 
     const event = await prisma.event.findUnique({
-      where: { id: eventId }
+      where: { id: eventId },
     });
 
     if (!event) {
@@ -32,17 +34,16 @@ export async function POST(
         description: description.trim(),
         rating: rating || null,
         eventId: eventId,
-        ownerId: userId
+        ownerId: userId,
       },
       include: {
         owner: {
           select: {
-            name: true
-          }
-        }
-      }
+            name: true,
+          },
+        },
+      },
     });
-
     return NextResponse.json({
       message: "Comment added successfully",
       comment: {
@@ -50,10 +51,9 @@ export async function POST(
         description: comment.description,
         rating: comment.rating,
         owner: comment.owner.name,
-        createdAt: comment.createdAt
-      }
+        createdAt: comment.createdAt,
+      },
     });
-
   } catch (error) {
     console.error("Error adding comment:", error);
     return NextResponse.json(
