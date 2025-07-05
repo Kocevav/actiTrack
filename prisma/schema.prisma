@@ -49,6 +49,7 @@ model Follow {
 enum EventStatus {
   CREATED
   FINISHED
+  ARCHIVED
 }
 
 model Event {
