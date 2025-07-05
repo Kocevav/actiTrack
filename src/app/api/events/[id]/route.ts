@@ -12,7 +12,6 @@ export async function GET(
     const session = await requireAuth();
     const userId = session.userId;
     const { id: eventId } = await params;
-    console.log(session, userId);
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       include: {
@@ -73,7 +72,6 @@ export async function PUT(
     const session = await requireAuth();
     const userId = session.userId;
     const { id } = params;
-    console.log(id);
 
     const body = await req.json();
     const { name, description, place, time, status } = body;
