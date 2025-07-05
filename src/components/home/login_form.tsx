@@ -5,13 +5,10 @@ import { login } from "@/lib/actions/auth";
 import { Oxanium } from "next/font/google";
 import { signInSchema } from "../../lib/zod";
 import { signIn } from "next-auth/react";
-import bcrypt from "bcrypt";
+import Spinner from "../ui/spiner";
 
-const oxanium = Oxanium({
-  subsets: ["latin"],
-});
+const oxanium = Oxanium({ subsets: ["latin"] });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function LoginForm({
   changeWhichFormState,
 }: {
@@ -24,8 +21,9 @@ export function LoginForm({
     email?: string;
     password?: string;
   }>({});
+  const [loading, setLoading] = useState(false);
 
-  const handleEmailLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleEmailLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const result = signInSchema.safeParse({ email, password });
 
@@ -39,58 +37,65 @@ export function LoginForm({
     }
 
     setFormErrors({});
-    signIn("credentials", result.data);
+    setLoading(true);
+    // signIn will redirect, so loading will end on page change
+    await signIn("credentials", result.data);
   };
 
-  const handleStravaLogin = () => {
+  const handleStravaLogin = async () => {
+    setLoading(true);
     login();
   };
 
   return (
     <div
-      className={`flex justify-center items-center min-h-screen px-4 ${oxanium.className}`}
+      className={`flex justify-center items-center min-h-screen px-4 bg-transparent ${oxanium.className}`}
     >
-      <div className="w-full max-w-md bg-white dark:bg-black rounded-lg shadow-md p-6 sm:p-8">
-        <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200 text-center">
+      {/* Spinner Overlay */}
+      {loading && <Spinner text="Loggin in.." />}
+      <div className="w-full max-w-md bg-neutral-900/90 border border-orange-400/20 rounded-2xl shadow-2xl p-8 backdrop-blur-md">
+        <h2 className="font-extrabold text-2xl text-orange-200 text-center tracking-wide drop-shadow">
           Welcome to ActiTrack
         </h2>
-        <p className="text-neutral-600 text-sm text-center mt-2 dark:text-neutral-300">
+        <p className="text-neutral-400 text-sm text-center mt-2 mb-6">
           Log in with Strava or email to track your activities.
         </p>
 
-        <form
-          onSubmit={handleEmailLogin}
-          className="my-6 flex flex-col space-y-4"
-        >
-          <input
-            type="email"
-            id="credentials-email"
-            placeholder="Email Address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="p-2 border rounded-md w-full text-sm md:text-base"
-            required
-          />
-          {formErrors.email && (
-            <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
-          )}
-
-          <input
-            type="password"
-            id="credentials-password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="p-2 border rounded-md w-full text-sm md:text-base"
-            required
-          />
-          {formErrors.password && (
-            <p className="text-red-500 text-sm mt-1">{formErrors.password}</p>
-          )}
-
+        <form onSubmit={handleEmailLogin} className="flex flex-col space-y-4">
+          <div>
+            <input
+              type="email"
+              id="credentials-email"
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg bg-neutral-800 border border-neutral-700 focus:border-orange-500 focus:ring-2 focus:ring-orange-400 text-white placeholder-neutral-500 outline-none transition"
+              required
+              disabled={loading}
+            />
+            {formErrors.email && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>
+            )}
+          </div>
+          <div>
+            <input
+              type="password"
+              id="credentials-password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg bg-neutral-800 border border-neutral-700 focus:border-orange-500 focus:ring-2 focus:ring-orange-400 text-white placeholder-neutral-500 outline-none transition"
+              required
+              disabled={loading}
+            />
+            {formErrors.password && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.password}</p>
+            )}
+          </div>
           <button
-            className="bg-orange-600 hover:bg-orange-700 transition duration-200 w-full text-white rounded-md h-10 font-medium shadow-md"
+            className="bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 transition w-full text-white rounded-lg h-11 font-semibold shadow-lg text-lg"
             type="submit"
+            disabled={loading}
           >
             Log in &rarr;
           </button>
@@ -98,19 +103,19 @@ export function LoginForm({
 
         <button
           onClick={handleStravaLogin}
-          className="flex items-center justify-center space-x-2 px-4 w-full text-black rounded-md h-10 font-medium shadow-md bg-gray-50 dark:bg-zinc-900"
+          className="flex items-center justify-center gap-2 mt-4 px-4 w-full h-11 rounded-lg font-semibold shadow-md bg-neutral-800 hover:bg-orange-900/30 transition text-orange-400 border border-orange-400/30"
+          disabled={loading}
         >
-          <IconBrandStrava className="h-5 w-5 text-orange-600" />
-          <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-            Login with Strava
-          </span>
+          <IconBrandStrava className="h-5 w-5 text-orange-500" />
+          <span className="text-orange-200">Login with Strava</span>
         </button>
 
-        <div className="text-center text-sm mt-4">
-          <span className="text-gray-600">Don&apos;t have an account? </span>
+        <div className="text-center text-sm mt-6">
+          <span className="text-neutral-400">Don&apos;t have an account? </span>
           <button
             onClick={changeWhichFormState}
-            className="text-blue-500 hover:underline"
+            className="text-orange-400 hover:underline font-semibold"
+            disabled={loading}
           >
             Register
           </button>

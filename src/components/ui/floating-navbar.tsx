@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { Dispatch, JSX, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -13,7 +12,7 @@ export const FloatingNav = ({
   navItems: {
     name: string;
     link: string;
-    icon?: JSX.Element;
+    icon?: React.ReactNode;
   }[];
   className?: string;
   setShowForm: Dispatch<SetStateAction<boolean>>;
@@ -21,48 +20,43 @@ export const FloatingNav = ({
 }) => {
   return (
     <AnimatePresence mode="wait">
-      <motion.div
-        initial={{
-          opacity: 1,
-          y: 0,
-        }}
-        animate={{
-          y: 0,
-          opacity: 1,
-        }}
-        transition={{
-          duration: 0.2,
-        }}
+      <motion.nav
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -16 }}
+        transition={{ duration: 0.3, type: "spring" }}
         className={cn(
-          "flex max-w-fit fixed top-7 inset-x-0 mx-auto border border-orange-100 dark:border-white/[20] rounded-full dark:bg-black  shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)] z-[5000] pr-2 pl-8 py-2 items-center justify-center space-x-4",
+          "flex max-w-fit fixed top-7 inset-x-0 mx-auto z-[5000] items-center justify-center px-4 py-2 space-x-2",
+          "rounded-full shadow-2xl border border-orange-500/30",
+          "bg-gradient-to-br from-neutral-900/80 via-neutral-950/80 to-black/80 backdrop-blur-md",
+          "ring-1 ring-orange-500/10",
           className
         )}
+        aria-label="Main Navigation"
       >
-        {navItems.map((navItem: any, idx: number) => (
+        {navItems.map((navItem) => (
           <Link
-            key={`link=${idx}`}
+            key={navItem.link}
             href={navItem.link}
             className={cn(
-              "relative dark:text-neutral-50 items-center flex space-x-1 text-white dark:hover:text-neutral-300 hover:text-orange-500 font-bold"
+              "flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-all duration-200",
+              "text-white hover:text-orange-400 focus:text-orange-400",
+              "hover:bg-orange-500/10 focus:bg-orange-500/10 outline-none",
+              "focus-visible:ring-2 focus-visible:ring-orange-400"
             )}
           >
-            <span className="block sm:hidden">{navItem.icon}</span>
-            <span className="hidden sm:block text-sm">{navItem.name}</span>
+            <span>{navItem.icon}</span>
+            <span className="text-base">{navItem.name}</span>
           </Link>
         ))}
-        <span className="absolute inset-x-0 mx-auto -bottom-px bg-gradient-to-r from-transparent via-orange-500 to-transparent h-px w-full" />
 
         <button
-          className="border text-sm relative border-neutral-200 dark:border-white/[0.2] text-white dark:text-white px-4 py-2 rounded-full hover:text-orange-500 font-bold"
-          onClick={() => sayHello(setShowForm)}
+          className="ml-2 flex items-center gap-2 px-5 py-2 rounded-full font-semibold bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 text-white shadow-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+          onClick={() => setShowForm(true)}
         >
           <span>Login</span>
         </button>
-      </motion.div>
+      </motion.nav>
     </AnimatePresence>
   );
 };
-
-function sayHello(setShowForm: Dispatch<SetStateAction<boolean>>) {
-  setShowForm(true);
-}
