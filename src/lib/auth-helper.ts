@@ -6,12 +6,12 @@ export async function requireAuth() {
 
   if (!session || !session.userId) {
     throw NextResponse.json(
-        {
-          success: false,
-          error: "Unauthorized",
-        },
-        { status: 401 }
-      );
+      {
+        success: false,
+        error: "Unauthorized",
+      },
+      { status: 401 }
+    );
   }
 
   return session;
