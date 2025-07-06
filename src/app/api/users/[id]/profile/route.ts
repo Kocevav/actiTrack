@@ -4,13 +4,15 @@ import { auth } from "@/auth";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await auth();
   const currentUserId = session?.userId;
-  const { id } = params;
 
-  if (!id) return NextResponse.json({ error: "No user id" }, { status: 400 });
+  if (!id) {
+    return NextResponse.json({ error: "No user id" }, { status: 400 });
+  }
 
   const user = await prisma.user.findUnique({
     where: { id },
@@ -19,6 +21,7 @@ export async function GET(
       name: true,
       email: true,
       image: true,
+      isStrava: true,
     },
   });
 

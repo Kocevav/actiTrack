@@ -38,14 +38,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
       },
       profile(profile) {
-        // console.log("Profilot");
-        // console.log(profile); // Debug log
+        console.log("Profilot");
+        console.log(profile); // Debug log
 
         return {
           id: String(profile.id),
           name: profile.firstname + " " + profile.lastname,
           email: profile.email,
           image: profile.profile_picture,
+          isStrava: true,
         };
       },
     }),
@@ -98,8 +99,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.accessToken = token.accessToken;
       session.userId = token.id;
 
-      // console.log("Sessionicka ");
-      // console.log(session); // Debug log
+      console.log("Sessionicka ");
+      console.log(session); // Debug log
       return session;
     },
   },
