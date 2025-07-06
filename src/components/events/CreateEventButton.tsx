@@ -14,7 +14,7 @@ export function CreateEventButton({
       onClick={onClick}
       disabled={loading}
       className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-400"
-      aria-label="Host a New Event"
+      aria-label="Host an Event"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -29,7 +29,7 @@ export function CreateEventButton({
           clipRule="evenodd"
         />
       </svg>
-      <span>Host a New Event</span>
+      <span>Host an Event</span>
       {loading && (
         <svg
           className="animate-spin ml-2 h-5 w-5 text-white"

@@ -11,7 +11,9 @@ export default function UpdateEventForm() {
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [dateTime, setDateTime] = useState<Date | null>(null);
-  const [status, setStatus] = useState<"CREATED" | "FINISHED">("CREATED");
+  const [status, setStatus] = useState<"CREATED" | "FINISHED" | "ARCHIVED">(
+    "CREATED"
+  );
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
@@ -19,7 +21,6 @@ export default function UpdateEventForm() {
   const params = useParams();
   const eventId = params.event as string;
 
-  // Fetch existing event data
   useEffect(() => {
     const fetchEvent = async () => {
       try {
@@ -30,7 +31,7 @@ export default function UpdateEventForm() {
         setDescription(data.event.description);
         setLocation(data.event.place);
         setDateTime(new Date(data.event.time));
-        setStatus(data.event.status); // Set status from fetched data
+        setStatus(data.event.status);
         setLoading(false);
       } catch (err) {
         console.error("Failed to load event:", err);
@@ -42,7 +43,6 @@ export default function UpdateEventForm() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!confirm) return;
     setUpdating(true);
 
     const res = await fetch(`/api/events/${eventId}`, {
@@ -73,9 +73,11 @@ export default function UpdateEventForm() {
   return (
     <form
       onSubmit={handleUpdate}
-      className="bg-black border border-neutral-800 p-6 rounded-2xl shadow-md w-full max-w-xl space-y-5"
+      className="bg-black border border-neutral-800 p-4 sm:p-6 rounded-2xl shadow-md w-full max-w-xl space-y-5"
     >
-      <h2 className="text-white text-2xl font-semibold mb-2">Update Event</h2>
+      <h2 className="text-white text-2xl font-semibold mb-2 text-center">
+        Update Event
+      </h2>
 
       <input
         type="text"
@@ -114,12 +116,13 @@ export default function UpdateEventForm() {
         />
       </div>
 
-      {/* Status select input */}
       <div>
         <label className="text-white mb-1 block">Status</label>
         <select
           value={status}
-          onChange={(e) => setStatus(e.target.value as "CREATED" | "FINISHED")}
+          onChange={(e) =>
+            setStatus(e.target.value as "CREATED" | "FINISHED" | "ARCHIVED")
+          }
           className="w-full p-2 rounded-md bg-neutral-900 text-white border border-neutral-700"
         >
           <option value="CREATED">Created</option>
