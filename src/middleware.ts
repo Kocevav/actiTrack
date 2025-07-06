@@ -4,7 +4,6 @@ import { handleApiAuth } from "./middleware/api.middleware";
 import { handleLogout, handlePageAuth } from "./middleware/pages.middleware";
 
 export default async function middleware(request: NextRequest) {
-  
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,

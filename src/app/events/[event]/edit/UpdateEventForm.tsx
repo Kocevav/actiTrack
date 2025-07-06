@@ -4,20 +4,23 @@ import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useRouter, useParams } from "next/navigation";
+import Spinner from "@/components/ui/spiner";
 
 export default function UpdateEventForm() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [dateTime, setDateTime] = useState<Date | null>(null);
-  const [status, setStatus] = useState<"CREATED" | "FINISHED">("CREATED");
+  const [status, setStatus] = useState<"CREATED" | "FINISHED" | "ARCHIVED">(
+    "CREATED"
+  );
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
 
   const router = useRouter();
   const params = useParams();
   const eventId = params.event as string;
 
-  // Fetch existing event data
   useEffect(() => {
     const fetchEvent = async () => {
       try {
@@ -28,7 +31,7 @@ export default function UpdateEventForm() {
         setDescription(data.event.description);
         setLocation(data.event.place);
         setDateTime(new Date(data.event.time));
-        setStatus(data.event.status); // Set status from fetched data
+        setStatus(data.event.status);
         setLoading(false);
       } catch (err) {
         console.error("Failed to load event:", err);
@@ -40,8 +43,7 @@ export default function UpdateEventForm() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    const confirmed = confirm("Are you sure you want to update this event?");
-    if (!confirmed) return;
+    setUpdating(true);
 
     const res = await fetch(`/api/events/${eventId}`, {
       method: "PUT",
@@ -51,9 +53,10 @@ export default function UpdateEventForm() {
         description,
         place: location,
         time: dateTime,
-        status,  // send status as well
+        status,
       }),
     });
+    setUpdating(false);
 
     const result = await res.json();
 
@@ -64,14 +67,15 @@ export default function UpdateEventForm() {
     }
   };
 
-  if (loading) return <p className="text-white">Loading...</p>;
+  if (loading) return <Spinner text="Loading..." />;
+  if (updating) return <Spinner text="Updating..." />;
 
   return (
     <form
       onSubmit={handleUpdate}
-      className="bg-black border border-neutral-800 p-6 rounded-2xl shadow-md w-full max-w-xl space-y-5"
+      className="bg-black border border-neutral-800 p-4 sm:p-6 rounded-2xl shadow-md w-full max-w-xl space-y-5"
     >
-      <h2 className="text-white text-2xl font-semibold mb-2">
+      <h2 className="text-white text-2xl font-semibold mb-2 text-center">
         Update Event
       </h2>
 
@@ -112,16 +116,18 @@ export default function UpdateEventForm() {
         />
       </div>
 
-      {/* Status select input */}
       <div>
         <label className="text-white mb-1 block">Status</label>
         <select
           value={status}
-          onChange={(e) => setStatus(e.target.value as "CREATED" | "FINISHED")}
+          onChange={(e) =>
+            setStatus(e.target.value as "CREATED" | "FINISHED" | "ARCHIVED")
+          }
           className="w-full p-2 rounded-md bg-neutral-900 text-white border border-neutral-700"
         >
           <option value="CREATED">Created</option>
           <option value="FINISHED">Finished</option>
+          <option value="ARCHIVED">Archived</option>
         </select>
       </div>
 

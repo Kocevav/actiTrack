@@ -8,8 +8,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const parsed = signUpSchema.safeParse(body);
 
-    console.log("Received body:", body);
-
     if (!parsed.success) {
       return NextResponse.json(
         {
@@ -21,7 +19,6 @@ export async function POST(req: Request) {
 
     const { email, firstName, lastName, password, startDate } = parsed.data;
 
-    // Check if email already exists
     const existingUser = await db.user.findUnique({ where: { email } });
     if (existingUser) {
       return NextResponse.json(
@@ -40,8 +37,6 @@ export async function POST(req: Request) {
         dateOfBirth: startDate?.toISOString() ?? null,
       },
     });
-
-    console.log(newUser);
 
     return NextResponse.json({ user: newUser }, { status: 201 });
   } catch (error) {

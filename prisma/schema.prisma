@@ -15,6 +15,7 @@ model User {
   emailVerified DateTime?
   image         String?
   dateOfBirth   String?
+  isStrava      Boolean? @default(false)
 
 
   ownedEvents   Event[]         @relation("EventOwner")
@@ -49,6 +50,7 @@ model Follow {
 enum EventStatus {
   CREATED
   FINISHED
+  ARCHIVED
 }
 
 model Event {
@@ -104,6 +106,7 @@ model Activity {
   duration  Float?
   distance  Float?
   date      DateTime?
+  polyline String?
 }
 
 model Account {

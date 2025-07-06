@@ -129,3 +129,18 @@
   @apply w-full bg-neutral-900 text-white p-2 rounded-md border border-neutral-700;
 }
 
+html,
+body {
+  min-height: 100%;
+  background: #0a0a0a;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #f59e42; /* orange-400 */
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -1,33 +1,29 @@
 "use client";
 import React from "react";
-import { FloatingNav } from "@/components/ui/floating-navbar";
 import { IconHome, IconMessage, IconUser } from "@tabler/icons-react";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import { FloatingNav } from "../ui/floating-navbar";
 export function FloatingNavBar({
   setShowForm,
   whichForm,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setShowForm: any;
+  setShowForm: (show: boolean) => void;
   whichForm: boolean;
 }) {
   const navItems = [
     {
       name: "Home",
       link: "/",
-      icon: <IconHome className="h-4 w-4 text-neutral-500 dark:text-white" />,
+      icon: <IconHome className="h-5 w-5" />,
     },
     {
       name: "About",
       link: "/about",
-      icon: <IconUser className="h-4 w-4 text-neutral-500 dark:text-white" />,
+      icon: <IconUser className="h-5 w-5" />,
     },
     {
       name: "Contact",
       link: "/contact",
-      icon: (
-        <IconMessage className="h-4 w-4 text-neutral-500 dark:text-white" />
-      ),
+      icon: <IconMessage className="h-5 w-5" />,
     },
   ];
   return (

@@ -1,41 +1,73 @@
 "use client";
-import React from "react";
-import { BackgroundBeams } from "../../components/ui/background-beams";
-import FetchedEvents from "../../components/ui/fetchedEvents";
-import Link from "next/link";
+import React, { Suspense, useState } from "react";
+import { FetchedEvents } from "../../components/ui/fetchedEvents";
+import { useRouter } from "next/navigation";
+import Spinner from "@/components/ui/spiner";
+import { CreateEventButton } from "@/components/events/CreateEventButton";
+import { PopularEventPieChart } from "@/components/ui/PopularEventPieChart";
+import { Modal } from "@/components/ui/Modal";
 
 export function EventsPage() {
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const router = useRouter();
+
+  const handleHostClick = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    setLoading(true);
+    setTimeout(() => {
+      router.push("/events/create");
+    }, 100);
+  };
+
   return (
-    <div className="w-full flex flex-1 min-h-screen bg-neutral-950 relative flex-col items-center justify-center antialiased">
-      <BackgroundBeams />
-      
-        {/* Header with Create Button */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto flex justify-between items-center px-8 mt-8 mb-4">
-        <h1 className="text-3xl font-bold text-white">Events</h1>
-        <Link href="/events/create">
-          <button className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors duration-300 flex items-center">
-           
-          {/* <button
-            className="bg-orange-600 hover:bg-orange-700 transition duration-200 w-full text-white rounded-md h-10 font-medium shadow-md"
-            type="submit"
-          > */}
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-5 w-5 mr-2" 
-              viewBox="0 0 20 20" 
-              fill="currentColor"
-            >
-              <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            Create New Event
+    <div className="w-full min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-neutral-900 via-neutral-950 to-black relative">
+      {/* Overlay Spinner when loading */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <Spinner text="Preparing your event form…" />
+        </div>
+      )}
+
+      <div className="relative z-10 w-full max-w-5xl mx-auto mt-8 mb-8 px-2 sm:px-4 py-6 sm:py-8 bg-neutral-900/80 rounded-2xl shadow-2xl border border-orange-400/10">
+        {/* Title and Create Button */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight drop-shadow-lg text-center sm:text-left w-full">
+            Discover Inspiring Events
+          </h1>
+          <div className="w-full sm:w-auto flex justify-center sm:justify-end mt-4 sm:mt-0">
+            <CreateEventButton onClick={handleHostClick} loading={loading} />
+          </div>
+        </div>
+        {/* Events List */}
+        <div className="w-full max-w-[900px] mx-auto mt-8 mb-8 px-0 sm:px-4">
+          <Suspense fallback={<Spinner />}>
+            <FetchedEvents />
+          </Suspense>
+        </div>
+        {/* Show Most Popular Events Button */}
+        <div className="flex justify-center w-full mt-4">
+          <button
+            onClick={() => setShowModal(true)}
+            className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 w-full sm:w-auto"
+          >
+            Show Most Popular Events
           </button>
-        </Link>
+        </div>
       </div>
 
-        <div className="w-full max-w-5xl px-8 mx-auto mt-4">
-          <FetchedEvents />
-       </div>
-      </div>
+      {/* Modal Popout */}
+      <Modal open={showModal} onClose={() => setShowModal(false)}>
+        <PopularEventPieChart />
+      </Modal>
+
+      {/* Decorative Glow */}
+      <div
+        aria-hidden
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[90vw] sm:w-[60vw] h-[20vh] bg-orange-500/10 blur-3xl rounded-full pointer-events-none"
+      />
+    </div>
   );
 }
+
 export default EventsPage;
