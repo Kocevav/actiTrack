@@ -194,8 +194,8 @@ export default function EventDetails() {
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-900 via-neutral-950 to-black">
       {deleting && <Spinner text="Deleting event..." />}
-      <div className="relative z-10 w-full max-w-[900px] mx-auto px-6 py-10 bg-neutral-900/90 border border-orange-400/10 rounded-3xl shadow-2xl backdrop-blur-md">
-        <div className="flex flex-col md:flex-row gap-8">
+      <div className="relative z-10 w-full max-w-[900px] mx-auto px-2 sm:px-6 py-10 bg-neutral-900/90 border border-orange-400/10 rounded-3xl shadow-2xl backdrop-blur-md">
+        <div className="flex flex-col md:flex-row gap-8 px-2 sm:px-6">
           {/* Left: Event Info and Actions */}
           <div className="flex-1">
             <div className="flex items-center gap-4 mb-4">
@@ -218,7 +218,6 @@ export default function EventDetails() {
               />
             </div>
             {/* Join/Leave and Owner Actions */}
-
             <div className="flex flex-wrap gap-4 mb-8">
               {eventData.status != "FINISHED" && (
                 <>
@@ -364,6 +363,7 @@ export default function EventDetails() {
           </div>
         </div>
       </div>
+
       <div
         aria-hidden
         className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[60vw] h-[20vh] bg-orange-500/10 blur-3xl rounded-full pointer-events-none"

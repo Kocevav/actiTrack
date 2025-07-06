@@ -6,6 +6,8 @@ import {
   IconBrandTabler,
   IconSettings,
   IconUserBolt,
+  IconMenu2,
+  IconX,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { signOut, useSession } from "next-auth/react";
@@ -41,14 +43,48 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const image = session.data?.user?.image;
   const id = session.data?.userId;
   const [loggingOut, setLoggingOut] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen w-full flex bg-gradient-to-br from-neutral-900 via-neutral-950 to-black">
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-gradient-to-br from-neutral-900 via-neutral-950 to-black">
       {/* Spinner Overlay */}
       {loggingOut && <Spinner text="Logging out…" />}
-      {/* Sidebar */}
-      <aside className="w-[260px] h-screen flex flex-col justify-between py-6 px-4 bg-neutral-900/90 border-r border-orange-400/10 shadow-2xl rounded-tr-3xl rounded-br-3xl">
-        <Link href="/" className="flex items-center gap-3 mb-8">
+
+      {/* Mobile Topbar */}
+      <div className="flex md:hidden items-center justify-between px-4 py-3 bg-neutral-900/90 border-b border-orange-400/10 shadow-2xl">
+        <Link href="/" className="flex items-center gap-3">
+          <span className="font-extrabold text-xl text-orange-200 tracking-wide drop-shadow">
+            ActiTrack
+          </span>
+        </Link>
+        <button
+          aria-label="Open menu"
+          onClick={() => setMenuOpen(true)}
+          className="text-orange-400"
+        >
+          <IconMenu2 className="w-7 h-7" />
+        </button>
+      </div>
+
+      {/* Sidebar (desktop) or Drawer (mobile) */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 md:static md:flex w-64 md:w-[260px] h-full md:h-screen flex-col justify-between py-6 px-4 bg-neutral-900/90 border-r border-orange-400/10 shadow-2xl rounded-tr-3xl rounded-br-3xl transition-transform duration-200",
+          menuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        )}
+        style={{ maxWidth: "100vw" }}
+      >
+        {/* Close button for mobile */}
+        <div className="flex md:hidden justify-end mb-4">
+          <button
+            aria-label="Close menu"
+            onClick={() => setMenuOpen(false)}
+            className="text-orange-400"
+          >
+            <IconX className="w-7 h-7" />
+          </button>
+        </div>
+        <Link href="/" className="hidden md:flex items-center gap-3 mb-8">
           <span className="font-extrabold text-xl text-orange-200 tracking-wide drop-shadow">
             ActiTrack
           </span>
@@ -60,8 +96,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 if (link.href === "/logout") {
                   e.preventDefault();
                   setLoggingOut(true);
+                  setMenuOpen(false);
                   await signOut({ callbackUrl: "/" });
-                  // No need to setLoggingOut(false) because redirect will happen
+                } else {
+                  setMenuOpen(false);
                 }
               }}
               key={idx}
@@ -79,6 +117,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <Link
             href="/"
             className="flex items-center gap-3 py-2 text-orange-200"
+            onClick={() => setMenuOpen(false)}
           >
             {image && (
               <Image
@@ -89,13 +128,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 alt="Avatar"
               />
             )}
-
             <span className="font-bold">{name}</span>
           </Link>
         </div>
       </aside>
+
+      {/* Overlay for mobile drawer */}
+      {menuOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 md:hidden"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center min-h-screen">
+      <main className="flex-1 flex flex-col items-center justify-center min-h-screen px-2 md:px-0">
         {children}
       </main>
     </div>
