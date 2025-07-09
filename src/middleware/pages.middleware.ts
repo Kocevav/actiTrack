@@ -5,12 +5,15 @@ export async function handlePageAuth(request: NextRequest, token: JWT | null) {
   const isLoggedIn = !!token;
   const path = request.nextUrl.pathname;
 
-  if (isLoggedIn && path === "/") {
-    return NextResponse.redirect(new URL("/events", request.url));
+    const publicPages = ["/", "/about", "/contact"];
+
+
+ if (!isLoggedIn && !publicPages.includes(path)) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
-  if(!isLoggedIn && path !== '/' ) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (isLoggedIn && path === "/") {
+    return NextResponse.redirect(new URL("/events", request.url));
   }
 
   return null;
