@@ -1,12 +1,12 @@
 "use client";
-import Background from "@/components/home/background";
-import { FloatingNavBar } from "@/components/home/navbar";
-import { homePageText } from "@/constants/constants";
+import Background from "../components/home/background";
+import { FloatingNavBar } from "../components/home/navbar";
+import { homePageText } from "../constants/constants";
 import { Oxanium } from "next/font/google";
 import { ReactTyped } from "react-typed";
 import { useState } from "react";
-import LoginForm from "@/components/home/login_form";
-import SignUpForm from "@/components/home/sign_up_form";
+import LoginForm from "../components/home/login_form";
+import SignUpForm from "../components/home/sign_up_form";
 import { AnimatePresence, motion } from "framer-motion";
 
 const oxanium = Oxanium({
