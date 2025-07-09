@@ -4,6 +4,7 @@ import "./globals.css";
 import { auth } from "@/auth";
 import { SessionProvider } from "next-auth/react";
 import "leaflet/dist/leaflet.css";
+import ChatWidget from "@/components/chatbot/ChatWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default async function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           {children}
+          <ChatWidget />
         </body>
       </html>
     </SessionProvider>

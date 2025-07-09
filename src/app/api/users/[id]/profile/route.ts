@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/utils/prisma";
 import { auth } from "@/auth";
+import { getUserWithStats } from "@/utils/user-queries.util";
 
 export async function GET(
   req: NextRequest,
@@ -14,29 +15,11 @@ export async function GET(
     return NextResponse.json({ error: "No user id" }, { status: 400 });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      image: true,
-      isStrava: true,
-    },
-  });
+  const userWithStats = await getUserWithStats(id);
 
-  if (!user)
+  if (!userWithStats) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
-
-  // Stats
-  const [ownedEvents, eventParticipation, comments, followedBy, following] =
-    await Promise.all([
-      prisma.event.count({ where: { ownerId: id } }),
-      prisma.eventParticipation.count({ where: { userId: id } }),
-      prisma.comment.count({ where: { ownerId: id } }),
-      prisma.follow.count({ where: { followingId: id } }),
-      prisma.follow.count({ where: { followerId: id } }),
-    ]);
+  }
 
   // Is current user following this user?
   let isFollowing = false;
@@ -48,8 +31,8 @@ export async function GET(
   }
 
   return NextResponse.json({
-    user,
-    stats: { ownedEvents, eventParticipation, comments, followedBy, following },
+    user: userWithStats.user,
+    stats: userWithStats.stats,
     isFollowing,
     isMe: currentUserId === id,
   });
