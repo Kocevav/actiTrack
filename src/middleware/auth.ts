@@ -6,18 +6,18 @@ export async function handlePageAuth(
   token: JWT | null
 ): Promise<NextResponse | null> {
   const isLoggedIn = !!token;
+    const path = request.nextUrl.pathname;
+    const publicPages = ["/", "/about", "/contact"];
+
   
-  // Logged-in user visits home → redirect to events
-  if (isLoggedIn && request.nextUrl.pathname === "/") {
-    return NextResponse.redirect(new URL("/events", request.url));
-  }
-  
-  // Non-logged-in user visits protected page → redirect to home
-  if (!isLoggedIn && request.nextUrl.pathname !== "/") {
+  if (!isLoggedIn && !publicPages.includes(path)) {
     return NextResponse.redirect(new URL("/", request.url));
   }
-  
-  // Everything is fine, continue
+
+  if (isLoggedIn && path === "/") {
+    return NextResponse.redirect(new URL("/events", request.url));
+  }
+
   return null;
 }
 
