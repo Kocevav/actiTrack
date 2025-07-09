@@ -2,11 +2,18 @@
 
 import React, { useState } from "react";
 import { FaFacebookF, FaInstagram, FaEnvelope } from "react-icons/fa";
+import { FloatingNavBar } from "../../components/home/navbar"; // Adjust path if needed
 
 const ContactPage = () => {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [status, setStatus] = useState<null | string>(null);
   const [loading, setLoading] = useState(false);
+
+  // State for FloatingNavBar forms
+  const [showForm, setShowForm] = useState(false);
+  const [whichForm, setWhichForm] = useState(false);
+
+  const changeShowFormState = () => setShowForm(!showForm);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -27,10 +34,14 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-900 via-neutral-950 to-black p-6">
+    <div className="w-full min-h-screen flex flex-col items-center bg-gradient-to-br from-neutral-900 via-neutral-950 to-black p-6">
+      {/* Floating Nav Bar */}
+      <FloatingNavBar setShowForm={changeShowFormState} whichForm={whichForm} />
+
+      {/* Contact Form Container */}
       <div
         className="
-          relative z-10 w-full max-w-3xl px-6 py-10 
+          relative z-10 w-full max-w-3xl mt-20 px-6 py-10 
           bg-neutral-900/80 rounded-2xl shadow-2xl border border-orange-400/10 
           transition-shadow duration-300
           hover:shadow-orange-500/50 hover:scale-[1.02] hover:bg-neutral-900/90
