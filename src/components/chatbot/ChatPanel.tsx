@@ -2,6 +2,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import ChatMessage from "./ChatMessage";
 import { Message } from "@/types/message";
 import { Send } from "lucide-react";
+import { X } from "lucide-react";
 
 interface ChatPanelProps {
   onClose?: () => void;
@@ -37,10 +38,17 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
     setUserMessage(e.target.value);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendUserMessage();
+    }
+  };
+
   const handleClear = () => {
     localStorage.removeItem("actiTrack-chat");
     setMessages([]);
-  }
+  };
 
   const handleSendUserMessage = async () => {
     if (!userMessage.trim()) return;
@@ -95,7 +103,7 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
         h-150 w-100
         flex flex-col justify-between
         bg-white
-        rounded-lg
+        rounded-3xl
         overflow-hidden
         transition-all duration-300
         ${
@@ -105,26 +113,31 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
       <div className="flex justify-between items-center p-3 border-b border-b-gray-300">
         <div className="flex items-center gap-2">
           <div>🤖</div>
-          <span>ActiTrackAI</span>
+          <span className="font-bold text-xl">ActiBot</span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button 
-          className="bg-gradient-to-r px-5 py-1 
-          from-orange-500 to-orange-700 
-          hover:from-orange-600 hover:to-orange-800 
-          text-white font-semibold 
-          rounded-xl shadow-lg 
-          transition-all duration-300 
-          focus:outline-none focus:ring-2 focus:ring-orange-400"
-          onClick={handleClear}
-          >Clear</button>
+        <div className="flex items-center gap-3">
+          <button
+            className="bg-gradient-to-r px-5 py-1 
+            from-orange-500 to-orange-700 
+            hover:from-orange-600 hover:to-orange-800 cursor-pointer hover:animate-bounce
+            text-white font-semibold 
+            rounded-xl shadow-lg c
+            transition-all duration-300 
+            focus:outline-none focus:ring-2 focus:ring-orange-400"
+            onClick={handleClear}
+          >
+            Clear
+          </button>
+
           <button
             onClick={onClose}
-            className="hover:bg-gray-200 px-2 py-1 rounded cursor-pointer"
-            
+            className="
+            hover:bg-gray-300 hover:animate-pulse 
+            rounded-lg cursor-pointer
+            transition-colors duration-300"
           >
-            ✕
+            <X size={27} />
           </button>
         </div>
       </div>
@@ -143,7 +156,7 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
           bg-neutral-900/90 border border-orange-400/10 text-neutral-200
           px-3 py-2 rounded-lg w-fit"
           >
-            Bot is typing...
+            ActiBot is typing...
           </div>
         )}
       </div>
@@ -155,6 +168,8 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
           type="text"
           value={userMessage}
           onChange={handleChange}
+          disabled={isSending}
+          onKeyDown={handleKeyDown}
         />
         <button
           disabled={isSending}
