@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import {GoogleGenerativeAI} from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getUserWithStats } from "@/utils/user-queries.util";
 
 export async function POST(req: Request) {
@@ -30,7 +30,7 @@ Current user context:
     const { message } = body;
 
     const genAi = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
-    const model = genAi.getGenerativeModel({model: "gemini-1.5-flash"});
+    const model = genAi.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Comprehensive system prompt based on actual codebase
     const systemPrompt = `You are a helpful assistant for ActiTrack, a sports activity tracking and social platform.
@@ -198,15 +198,25 @@ ${
 Always ask if they need more specific help with any feature!`;
 
     const prompt = `${systemPrompt}\n\nUser: ${message}`;
-    const result = await model.generateContent(prompt);
 
-    const aiResponse = result.response.text();
+    try {
+      const result = await model.generateContent(prompt);
+      const aiResponse = result.response.text();
 
-    return NextResponse.json({
-      message: aiResponse,
-      success: true,
-      isAuthenticated: !!userId,
-    });
+      return NextResponse.json({
+        message: aiResponse,
+        success: true,
+        isAuthenticated: !!userId,
+      });
+    } catch (error) {
+      if (error.status === 503) {
+        return NextResponse.json({
+          message: "I'm experiencing high traffic right now.",
+          success: false,
+          error: "service_overloaded",
+        });
+      }
+    }
   } catch (error) {
     console.log("Error messaging chat-bot", error);
     return NextResponse.json(

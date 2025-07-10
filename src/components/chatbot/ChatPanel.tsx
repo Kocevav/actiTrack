@@ -2,6 +2,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import ChatMessage from "./ChatMessage";
 import { Message } from "@/types/message";
 import { Send } from "lucide-react";
+import { X } from "lucide-react";
 
 interface ChatPanelProps {
   onClose?: () => void;
@@ -13,8 +14,40 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isSending, setIsSending] = useState<boolean>(false);
 
+  useEffect(() => {
+    setIsVisible(true);
+
+    const saved = localStorage.getItem("actiTrack-chat");
+    if (saved) {
+      try {
+        const parsedMessages = JSON.parse(saved);
+        setMessages(parsedMessages);
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem("actiTrack-chat", JSON.stringify(messages));
+    }
+  }, [messages]);
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUserMessage(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendUserMessage();
+    }
+  };
+
+  const handleClear = () => {
+    localStorage.removeItem("actiTrack-chat");
+    setMessages([]);
   };
 
   const handleSendUserMessage = async () => {
@@ -63,10 +96,6 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
     }
   };
 
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
-
   return (
     <div
       className={`
@@ -74,7 +103,7 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
         h-150 w-100
         flex flex-col justify-between
         bg-white
-        rounded-lg
+        rounded-3xl
         overflow-hidden
         transition-all duration-300
         ${
@@ -84,15 +113,31 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
       <div className="flex justify-between items-center p-3 border-b border-b-gray-300">
         <div className="flex items-center gap-2">
           <div>🤖</div>
-          <span>ActiTrackAI</span>
+          <span className="font-bold text-xl">ActiBot</span>
         </div>
 
-        <div className=" ">
+        <div className="flex items-center gap-3">
+          <button
+            className="bg-gradient-to-r px-5 py-1 
+            from-orange-500 to-orange-700 
+            hover:from-orange-600 hover:to-orange-800 cursor-pointer hover:animate-bounce
+            text-white font-semibold 
+            rounded-xl shadow-lg c
+            transition-all duration-300 
+            focus:outline-none focus:ring-2 focus:ring-orange-400"
+            onClick={handleClear}
+          >
+            Clear
+          </button>
+
           <button
             onClick={onClose}
-            className="hover:bg-gray-200 px-2 py-1 rounded cursor-pointer"
+            className="
+            hover:bg-gray-300 hover:animate-pulse 
+            rounded-lg cursor-pointer
+            transition-colors duration-300"
           >
-            ✕
+            <X size={27} />
           </button>
         </div>
       </div>
@@ -103,8 +148,15 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
         ))}
 
         {isSending && (
-          <div className="mr-auto italic text-gray bg-orange-300 px-1 py-1 rounded-lg max-w-xs">
-            Bot is typing...
+          <div
+            className="
+          flex justify-start
+          animate-bounce
+          italic
+          bg-neutral-900/90 border border-orange-400/10 text-neutral-200
+          px-3 py-2 rounded-lg w-fit"
+          >
+            ActiBot is typing...
           </div>
         )}
       </div>
@@ -112,16 +164,20 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
       <div className="border-white border-2 flex justify-between  border-t border-t-gray-300 p-2">
         <input
           placeholder="Your message here..."
-          className="flex-1 border-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+          className="flex-1 border-none focus:outline-none"
           type="text"
           value={userMessage}
           onChange={handleChange}
+          disabled={isSending}
+          onKeyDown={handleKeyDown}
         />
         <button
           disabled={isSending}
           onClick={handleSendUserMessage}
           className={`p-2 rounded-lg transition-colors ${
-            isSending ? "cursor-not-allowed" : "hover:bg-orange-200 cursor-pointer"
+            isSending
+              ? "cursor-not-allowed"
+              : "hover:bg-orange-200 cursor-pointer"
           }`}
         >
           <Send size={20} />
