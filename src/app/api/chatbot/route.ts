@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import {GoogleGenerativeAI} from "@google/generative-ai";
 import { getUserWithStats } from "@/utils/user-queries.util";
 
 export async function POST(req: Request) {
@@ -29,9 +29,8 @@ Current user context:
     const body = await req.json();
     const { message } = body;
 
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    const genAi = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+    const model = genAi.getGenerativeModel({model: "gemini-1.5-flash"});
 
     // Comprehensive system prompt based on actual codebase
     const systemPrompt = `You are a helpful assistant for ActiTrack, a sports activity tracking and social platform.
@@ -198,25 +197,10 @@ ${
 
 Always ask if they need more specific help with any feature!`;
 
-    const messages = [
-      {
-        role: "system" as const,
-        content: systemPrompt,
-      },
-      {
-        role: "user" as const,
-        content: message,
-      },
-    ];
+    const prompt = `${systemPrompt}\n\nUser: ${message}`;
+    const result = await model.generateContent(prompt);
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: messages,
-      max_tokens: 500,
-      temperature: 0.7,
-    });
-
-    const aiResponse = completion.choices[0]?.message?.content;
+    const aiResponse = result.response.text();
 
     return NextResponse.json({
       message: aiResponse,
