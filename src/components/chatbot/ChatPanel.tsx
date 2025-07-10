@@ -13,31 +13,34 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isSending, setIsSending] = useState<boolean>(false);
 
-
   useEffect(() => {
     setIsVisible(true);
-    
-    const saved = localStorage.getItem('actiTrack-chat');
-    if(saved) {
+
+    const saved = localStorage.getItem("actiTrack-chat");
+    if (saved) {
       try {
         const parsedMessages = JSON.parse(saved);
         setMessages(parsedMessages);
-      } catch(error) {
-          console.error("Failed to load chat history:", error);
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
       }
     }
   }, []);
 
   useEffect(() => {
     if (messages.length > 0) {
-      localStorage.setItem('actiTrack-chat', JSON.stringify(messages));
+      localStorage.setItem("actiTrack-chat", JSON.stringify(messages));
     }
   }, [messages]);
-
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUserMessage(e.target.value);
   };
+
+  const handleClear = () => {
+    localStorage.removeItem("actiTrack-chat");
+    setMessages([]);
+  }
 
   const handleSendUserMessage = async () => {
     if (!userMessage.trim()) return;
@@ -105,10 +108,21 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
           <span>ActiTrackAI</span>
         </div>
 
-        <div className=" ">
+        <div className="flex items-center gap-2">
+          <button 
+          className="bg-gradient-to-r px-5 py-1 
+          from-orange-500 to-orange-700 
+          hover:from-orange-600 hover:to-orange-800 
+          text-white font-semibold 
+          rounded-xl shadow-lg 
+          transition-all duration-300 
+          focus:outline-none focus:ring-2 focus:ring-orange-400"
+          onClick={handleClear}
+          >Clear</button>
           <button
             onClick={onClose}
             className="hover:bg-gray-200 px-2 py-1 rounded cursor-pointer"
+            
           >
             ✕
           </button>
@@ -121,11 +135,14 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
         ))}
 
         {isSending && (
-          <div className="
-          animate-pulse animate-bounce
-          mr-auto italic
+          <div
+            className="
+          flex justify-start
+          animate-bounce
+          italic
           bg-neutral-900/90 border border-orange-400/10 text-neutral-200
-          px-3 py-2 rounded-lg w-fit">
+          px-3 py-2 rounded-lg w-fit"
+          >
             Bot is typing...
           </div>
         )}
@@ -143,7 +160,9 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
           disabled={isSending}
           onClick={handleSendUserMessage}
           className={`p-2 rounded-lg transition-colors ${
-            isSending ? "cursor-not-allowed" : "hover:bg-orange-200 cursor-pointer"
+            isSending
+              ? "cursor-not-allowed"
+              : "hover:bg-orange-200 cursor-pointer"
           }`}
         >
           <Send size={20} />
