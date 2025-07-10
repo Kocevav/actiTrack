@@ -13,6 +13,28 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isSending, setIsSending] = useState<boolean>(false);
 
+
+  useEffect(() => {
+    setIsVisible(true);
+    
+    const saved = localStorage.getItem('actiTrack-chat');
+    if(saved) {
+      try {
+        const parsedMessages = JSON.parse(saved);
+        setMessages(parsedMessages);
+      } catch(error) {
+          console.error("Failed to load chat history:", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('actiTrack-chat', JSON.stringify(messages));
+    }
+  }, [messages]);
+
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUserMessage(e.target.value);
   };
@@ -63,10 +85,6 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
     }
   };
 
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
-
   return (
     <div
       className={`
@@ -103,7 +121,11 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
         ))}
 
         {isSending && (
-          <div className="mr-auto italic text-gray bg-orange-300 px-1 py-1 rounded-lg max-w-xs">
+          <div className="
+          animate-pulse animate-bounce
+          mr-auto italic
+          bg-neutral-900/90 border border-orange-400/10 text-neutral-200
+          px-3 py-2 rounded-lg w-fit">
             Bot is typing...
           </div>
         )}
@@ -112,7 +134,7 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
       <div className="border-white border-2 flex justify-between  border-t border-t-gray-300 p-2">
         <input
           placeholder="Your message here..."
-          className="flex-1 border-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+          className="flex-1 border-none focus:outline-none"
           type="text"
           value={userMessage}
           onChange={handleChange}
