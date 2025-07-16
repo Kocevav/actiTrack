@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth } from "@/auth"; // your auth helper
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getUserWithStats } from "@/utils/user-queries.util";
@@ -6,222 +6,86 @@ import { getUserWithStats } from "@/utils/user-queries.util";
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    const userId = session?.userId;
+    if (!session?.userId) {
+      return NextResponse.json({ message: "Not authenticated", success: false }, { status: 401 });
+    }
 
-    // Get user context if logged in (optional)
-    let userContext = "";
-    if (userId) {
-      const userWithStats = await getUserWithStats(userId);
-      if (userWithStats) {
-        userContext = `
-Current user context:
-- Name: ${userWithStats.user.name || "No name set"}
-- Has Strava connected: ${userWithStats.user.isStrava ? "Yes" : "No"}
+    const userId = session.userId;
+
+    const userWithStats = await getUserWithStats(userId);
+
+    if (!userWithStats) {
+      return NextResponse.json({ message: "User not found", success: false }, { status: 404 });
+    }
+
+    let userContext = `User info:
+- Name: ${userWithStats.user.name || "Unknown"}
 - Total events hosted: ${userWithStats.stats.ownedEvents}
 - Total events participated: ${userWithStats.stats.eventParticipation}
-- Following ${userWithStats.stats.following} users
-- Has ${userWithStats.stats.followedBy} followers
-- Comments posted: ${userWithStats.stats.comments}
-        `;
-      }
+- Followers: ${userWithStats.stats.followedBy}
+- Following: ${userWithStats.stats.following}
+
+`;
+
+    const activities = userWithStats.stats.activities || [];
+
+    if (activities.length > 0) {
+      const topActivities = activities.slice(0, 5);
+      const activitySummary = topActivities
+        .map(
+          (a, i) =>
+            `${i + 1}. Type: ${a.type}, Distance: ${a.distance} km, Duration: ${a.duration} min, Date: ${
+              a.date ? new Date(a.date).toLocaleDateString() : "No date"
+            }`
+        )
+        .join("\n");
+
+      userContext += `Recent activities:
+${activitySummary}
+
+`;
+    } else {
+      userContext += "No recent activities found.\n\n";
     }
 
     const body = await req.json();
     const { message } = body;
 
+    const lowerMessage = message.toLowerCase();
+    const isPersonalQuestion = [
+      "my activity",
+      "my run",
+      "my walk",
+      "my ride",
+      "last activities",
+      "my recent activities",
+      "compare",
+      "my last activity",
+    ].some((keyword) => lowerMessage.includes(keyword));
+
     const genAi = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
     const model = genAi.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    // Comprehensive system prompt based on actual codebase
-    const systemPrompt = `You are a helpful assistant for ActiTrack, a sports activity tracking and social platform.
+    let systemPrompt = "";
+    if (isPersonalQuestion && userContext) {
+      systemPrompt = `You are a helpful assistant specialized in user activity insights. Use the user data below to answer questions clearly and concisely.
 
-${
-  userContext
-    ? userContext
-    : "This user is not logged in. Focus on general app information and encourage sign-up when relevant."
-}
+${userContext}
+`;
+    } else {
+      systemPrompt = `You are a helpful assistant specialized in fitness and sports activities. Answer the user's question clearly and concisely, without user-specific data.
 
-## APP STRUCTURE & NAVIGATION
-
-**Main Navigation (Sidebar):**
-- Dashboard (/) - Home page
-- Profile (/profile/[userId]) - User profile page
-- Settings (/settings) - User settings
-- Logout - Sign out
-
-**Key Pages:**
-- Events (/events) - Browse all public events
-- Events Create (/events/create) - Create new event
-- Profile (/profile/[userId]) - View user profiles
-
-## AUTHENTICATION & REGISTRATION
-
-**Sign Up Process:**
-1. Visit home page (/)
-2. Click to show sign-up form
-3. Fill in: First Name, Last Name, Email, Password, Confirm Password, Date of Birth (optional)
-4. Choose: Regular email signup OR Strava account signup
-5. After successful signup, automatically redirected to /events
-
-**Login Process:**
-1. Visit home page (/)
-2. Click to show login form
-3. Enter: Email and Password OR use Strava login
-4. After login, redirected to /events
-
-**Strava Integration:**
-- Users can sign up/login with Strava account
-- Strava users get additional features like activity import and heatmaps
-- Strava accounts have isStrava: true flag
-
-## EVENTS SYSTEM
-
-**How to Create an Event:**
-1. Navigate to Events page (/events)
-2. Click "Host an Event" button
-3. Fill out the form with:
-   - Event Name (required)
-   - Description (required, textarea)
-   - Location (required)
-   - Date & Time (required, date picker)
-4. Click "Let's Make It Happen!" button
-5. Event is created with status: CREATED
-6. Redirected back to events list
-
-**Event Details:**
-- Events are PUBLIC - visible to all users
-- Events have statuses: CREATED, FINISHED, ARCHIVED
-- Users can join/leave events
-- Event owners can edit/delete their events
-- Users can comment and rate events after they're finished
-
-**How to Join an Event:**
-1. Browse events on /events page
-2. Click on an event to view details
-3. Click "Join Event" button
-4. You're now a participant
-
-## ACTIVITIES SYSTEM
-
-**Activity Types:**
-- Activities contain: type, duration, distance, date, polyline (for map)
-- Activities are PRIVATE - only visible to users you follow
-- Activities can be manually created or imported from Strava
-
-**For Strava Users - Import Activities:**
-1. Go to your profile page
-2. Find "Enter Strava Activity ID" input field
-3. Enter the activity ID from Strava
-4. Click "Add Activity" button
-5. Activity is imported with full data (type, duration, distance, route)
-
-**Activity Features:**
-- Activity heatmap on profile (Strava users only)
-- Date filtering for activities
-- Map visualization of activity routes
-- Activity statistics and tracking
-
-## SOCIAL FEATURES
-
-**Following System:**
-1. Visit any user's profile (/profile/[userId])
-2. Click "Follow" button
-3. You can now see their activities
-4. They can see you in their followers list
-
-**Profile Features:**
-- View user statistics (events hosted, events joined, comments, followers, following)
-- See user's activity heatmap (Strava users only)
-- Follow/unfollow users
-- Search for users
-
-## PRIVACY & PERMISSIONS
-
-**What's Public:**
-- Events (all users can see and join)
-- User profiles (basic info)
-- User statistics
-
-**What's Private:**
-- Activities (only followers can see)
-- Email addresses
-- Personal activity data
-
-## COMMON USER FLOWS
-
-**New User Onboarding:**
-1. Sign up with email or Strava
-2. Redirected to /events to discover events
-3. Join events or create your first event
-4. Connect with other users by following them
-5. If Strava user: import activities to build activity history
-
-**Regular Usage:**
-1. Check /events for new events to join
-2. Create events for activities you want to organize
-3. Follow other users to see their activities
-4. Import/track your own activities (Strava users)
-5. Comment and rate events you've participated in
-
-## TECHNICAL DETAILS
-
-**Database Models:**
-- Users: id, name, email, image, isStrava, dateOfBirth
-- Events: name, description, time, place, status, owner
-- Activities: type, duration, distance, date, polyline, owner
-- Comments: description, rating, owner, event
-- Follows: follower relationship between users
-
-**Key Features:**
-- Real-time activity import from Strava API
-- Interactive maps for activity visualization
-- Event management with participation tracking
-- Social following system
-- User statistics and analytics
-
-## RESPONSE GUIDELINES
-
-${
-  userContext
-    ? "You can reference their specific stats when relevant."
-    : "For non-logged users, focus on explaining features and benefits."
-}
-
-- Be helpful, friendly, and concise
-- Use specific UI element names (buttons, forms, pages)
-- Provide step-by-step instructions
-- Mention exact URLs when helpful
-- If user asks about features not implemented, guide them to available alternatives
-- Encourage social interaction and event participation
-- For Strava users, emphasize the enhanced features they have access to
-
-Always ask if they need more specific help with any feature!`;
-
-    const prompt = `${systemPrompt}\n\nUser: ${message}`;
-
-    try {
-      const result = await model.generateContent(prompt);
-      const aiResponse = result.response.text();
-
-      return NextResponse.json({
-        message: aiResponse,
-        success: true,
-        isAuthenticated: !!userId,
-      });
-    } catch (error) {
-      if (error.status === 503) {
-        return NextResponse.json({
-          message: "I'm experiencing high traffic right now.",
-          success: false,
-          error: "service_overloaded",
-        });
-      }
+`;
     }
+
+    const prompt = `${systemPrompt}\nUser: ${message}`;
+
+    const result = await model.generateContent(prompt);
+    const aiResponse = result.response.text();
+
+    return NextResponse.json({ message: aiResponse, success: true });
   } catch (error) {
-    console.log("Error messaging chat-bot", error);
-    return NextResponse.json(
-      { success: false, error: "Server error" },
-      { status: 500 }
-    );
+    console.error("Error calling Gemini:", error);
+    return NextResponse.json({ message: "Failed to generate response.", success: false });
   }
 }
