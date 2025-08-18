@@ -75,20 +75,41 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
         body: JSON.stringify({ message: tempUserMessage }),
       });
 
-      if (response.ok) {
-        const botResponse = await response.json();
-        console.log("Bot response:", botResponse);
+      if (!response.ok) {
+        let errorText = "I couldn't respond right now. Please try again later.";
+        try {
+          const errorBody = await response.json();
+          if (errorBody?.message) {
+            errorText = errorBody.message === "Not authenticated"
+              ? "Please log in to use ActiBot."
+              : errorBody.message;
+          }
+        } catch {}
 
         const botMessageObj: Message = {
           id: (Date.now() + 1).toString(),
-          text: botResponse.message || "No response", // Assuming API returns { message: "..." }
+          text: errorText,
           isUser: false,
           timestamp: new Date(),
         };
 
-        setIsSending(false);
         setMessages((prevMessages) => [...prevMessages, botMessageObj]);
+        setIsSending(false);
+        return;
       }
+
+      const botResponse = await response.json();
+      console.log("Bot response:", botResponse);
+
+      const botMessageObj: Message = {
+        id: (Date.now() + 1).toString(),
+        text: botResponse.message || "No response", // Assuming API returns { message: "..." }
+        isUser: false,
+        timestamp: new Date(),
+      };
+
+      setIsSending(false);
+      setMessages((prevMessages) => [...prevMessages, botMessageObj]);
     } catch (error) {
       setIsSending(false);
       setUserMessage(tempUserMessage);
